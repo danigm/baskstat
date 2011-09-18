@@ -20,6 +20,7 @@
 
 
 #include "config.h"
+#include "baskstat-player.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -43,21 +44,10 @@ enum
 };
 
 typedef struct {
-    gint number;
-    gboolean playing;
-    gint points;
-    gint rebounds;
-    gint steals;
-    gint assists;
-    gint turnover;
-    gint foults;
-} Player;
-
-typedef struct {
     gchar *path;
     gfloat x;
     gfloat y;
-    Player *player;
+    BaskstatPlayer *player;
 } BasketObject;
 
 // global basket object list
@@ -65,13 +55,13 @@ GList *basket_object_list = NULL;
 GList *local_player_list = NULL;
 GList *visit_player_list = NULL;
 
-Player *current_player = NULL;
+BaskstatPlayer *current_player = NULL;
 
 void
-basketball_change_current_player (GtkToggleButton *button,
+baskstat_change_current_player (GtkToggleButton *button,
                                   GList *player_list)
 {
-    Player *p = NULL;
+    BaskstatPlayer *p = NULL;
     GList *l;
     gchar pnumber[3];
     const gchar *blabel;
@@ -79,28 +69,13 @@ basketball_change_current_player (GtkToggleButton *button,
     if (gtk_toggle_button_get_active (button)) {
         blabel = gtk_button_get_label (GTK_BUTTON (button));
         for (l = player_list; l; l = l->next) {
-            p = (Player*)l->data;
+            p = (BaskstatPlayer*)l->data;
             snprintf (pnumber, 3, "%d\n", p->number);
             if (!strcmp (pnumber, blabel)) {
                 current_player = p;
             }
         }
     }
-}
-
-Player *
-basketball_new_player ()
-{
-    Player *p = malloc (sizeof (Player));
-    p->number = 4;
-    p->playing = FALSE;
-    p->points = 0;
-    p->rebounds = 0;
-    p->steals = 0;
-    p->assists = 0;
-    p->turnover = 0;
-    p->foults = 0;
-    return p;
 }
 
 static void
@@ -112,7 +87,7 @@ playing_toggled (GtkCellRendererToggle *cell,
     GtkTreeIter  iter;
     GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
     gboolean playing;
-    Player *player;
+    BaskstatPlayer *player;
     GList *l, *list;
     gint nplaying = 0;
 
@@ -123,7 +98,7 @@ playing_toggled (GtkCellRendererToggle *cell,
     gtk_tree_model_get (model, &iter, COLUMN_LIST, &list, -1);
 
     for (l = list; l; l = l->next) {
-        if (((Player*)(l->data))->playing) {
+        if (((BaskstatPlayer*)(l->data))->playing) {
             nplaying++;
         }
     }
@@ -141,14 +116,14 @@ playing_toggled (GtkCellRendererToggle *cell,
 }
 
 GtkWidget *
-basketball_player_widget_new (GList *player_list)
+baskstat_player_widget_new (GList *player_list)
 {
     GtkWidget *widget;
     GtkListStore *model;
     GtkTreeIter iter;
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
-    Player *p;
+    BaskstatPlayer *p;
     GList *l;
 
     model = gtk_list_store_new (NUM_COLUMNS,
@@ -161,7 +136,7 @@ basketball_player_widget_new (GList *player_list)
 
     /* add data to the list store */
     for (l = player_list; l; l = l->next) {
-        p = (Player*)(l->data);
+        p = (BaskstatPlayer*)(l->data);
         gtk_list_store_append (model, &iter);
         gtk_list_store_set (model, &iter,
                 COLUMN_PLAYING, p->playing,
@@ -227,13 +202,13 @@ basketball_player_widget_new (GList *player_list)
 }
 
 GtkWidget *
-basketball_player_playing_new (GList *player_list, GtkWidget *w)
+baskstat_player_playing_new (GList *player_list, GtkWidget *w)
 {
     GtkWidget *widget;
     GtkWidget *radio = NULL, *prev = NULL;
     GList *l;
     gchar text[3] = {0};
-    Player *p;
+    BaskstatPlayer *p;
 
     if (w) {
         for (l = gtk_container_get_children (GTK_CONTAINER (w)); l; l = l->next) {
@@ -245,7 +220,7 @@ basketball_player_playing_new (GList *player_list, GtkWidget *w)
     }
 
     for (l = player_list; l; l = l->next) {
-        p = (Player*)l->data;
+        p = (BaskstatPlayer*)l->data;
         if (!p->playing)
             continue;
 
@@ -258,7 +233,7 @@ basketball_player_playing_new (GList *player_list, GtkWidget *w)
             gtk_grid_attach_next_to (GTK_GRID (widget), radio, prev, GTK_POS_RIGHT, 1, 1);
         }
 
-        g_signal_connect (G_OBJECT (radio), "toggled", G_CALLBACK (basketball_change_current_player), player_list);
+        g_signal_connect (G_OBJECT (radio), "toggled", G_CALLBACK (baskstat_change_current_player), player_list);
         prev = radio;
     }
     gtk_widget_show_all (widget);
@@ -267,7 +242,7 @@ basketball_player_playing_new (GList *player_list, GtkWidget *w)
 }
 
 BasketObject *
-basketball_new_basket ()
+baskstat_new_basket ()
 {
     BasketObject *basket = malloc (sizeof (BasketObject));
     basket->path = DATA_DIR "/success.svg";
@@ -283,7 +258,7 @@ add_basket (GtkWidget       *widget,
             GdkEventButton  *event,
             gpointer        user_data)
 {
-    BasketObject *new_basket = basketball_new_basket ();
+    BasketObject *new_basket = baskstat_new_basket ();
     gint width, height;
 
     width = gtk_widget_get_allocated_width (widget);
@@ -408,7 +383,7 @@ reload_local_playing (GtkTreeModel *tree_model,
                       GtkTreeIter  *iter,
                       GtkWidget    *player_playing)
 {
-    basketball_player_playing_new (local_player_list, player_playing);
+    baskstat_player_playing_new (local_player_list, player_playing);
 }
 
 void
@@ -417,7 +392,7 @@ reload_visit_playing (GtkTreeModel *tree_model,
                       GtkTreeIter  *iter,
                       GtkWidget    *player_playing)
 {
-    basketball_player_playing_new (visit_player_list, player_playing);
+    baskstat_player_playing_new (visit_player_list, player_playing);
 }
 
 int
@@ -460,22 +435,22 @@ main (int argc, char **argv)
 
     // player widgets creation
     for (i = 0; i < 12; i++) {
-        Player *p = basketball_new_player ();
+        BaskstatPlayer *p = baskstat_player_new ();
         p->number = i + 4;
         local_player_list = g_list_append (local_player_list, p);
 
-        p = basketball_new_player ();
+        p = baskstat_player_new ();
         p->number = i + 4;
         visit_player_list = g_list_append (visit_player_list, p);
     }
 
-    local_players_widget = basketball_player_widget_new (local_player_list);
-    local_players_playing = basketball_player_playing_new (local_player_list, NULL);
+    local_players_widget = baskstat_player_widget_new (local_player_list);
+    local_players_playing = baskstat_player_playing_new (local_player_list, NULL);
     g_signal_connect (G_OBJECT (gtk_tree_view_get_model (GTK_TREE_VIEW (local_players_widget))),
                       "row-changed", G_CALLBACK (reload_local_playing), local_players_playing);
 
-    visit_players_widget = basketball_player_widget_new (visit_player_list);
-    visit_players_playing = basketball_player_playing_new (visit_player_list, NULL);
+    visit_players_widget = baskstat_player_widget_new (visit_player_list);
+    visit_players_playing = baskstat_player_playing_new (visit_player_list, NULL);
     g_signal_connect (G_OBJECT (gtk_tree_view_get_model (GTK_TREE_VIEW (visit_players_widget))),
                       "row-changed", G_CALLBACK (reload_visit_playing), visit_players_playing);
 

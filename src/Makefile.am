@@ -6,7 +6,9 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(includedir) $(GNOME_INCLUDEDIR) \
 
 bin_PROGRAMS = baskstat
 
-SOURCES = main.c
+SOURCES = main.c \
+		  baskstat-player.h \
+		  baskstat-player.c
 
 AM_CFLAGS = @GTK_CFLAGS@ \
 			 $(PACKAGE_CFLAGS) \
