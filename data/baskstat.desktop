@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Exec=baskstat
+Icon=baskstat
+Type=Application
+Terminal=false
+Name=BaskStat
+GenericName=BaskStat
+StartupNotify=true
