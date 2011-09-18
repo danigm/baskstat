@@ -1,3 +1,4 @@
 [encoding: UTF-8]
 src/main.c \
-src/baskstat-player.c
+src/baskstat-player.c \
+src/baskstat-court.c

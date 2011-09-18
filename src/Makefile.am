@@ -8,7 +8,9 @@ bin_PROGRAMS = baskstat
 
 SOURCES = main.c \
 		  baskstat-player.h \
-		  baskstat-player.c
+		  baskstat-player.c \
+		  baskstat-court.h \
+		  baskstat-court.c
 
 AM_CFLAGS = @GTK_CFLAGS@ \
 			 $(PACKAGE_CFLAGS) \
