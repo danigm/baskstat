@@ -49,6 +49,7 @@ main (int argc, char **argv)
     gint i;
     GtkWidget *window;
     GtkWidget *layout;
+    GtkWidget *central_layout;
 
     GtkWidget *local_players_widget;
     GtkWidget *visit_players_widget;
@@ -70,8 +71,8 @@ main (int argc, char **argv)
     basket_court = baskstat_court_new ();
 
     // teams creation
-    local = BASKSTAT_TEAM (baskstat_team_new (basket_court));
-    visit = BASKSTAT_TEAM (baskstat_team_new (basket_court));
+    local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court)));
+    visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court)));
     for (i = 0; i < 12; i++) {
         BaskstatPlayer *p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;
@@ -86,19 +87,24 @@ main (int argc, char **argv)
     visit_player_list = visit->players;
 
     local_players_widget = baskstat_team_player_widget_new (local);
-    local_players_playing = baskstat_team_playing_new (local, local_players_widget);
+    local_players_playing = baskstat_team_playing_new (local);
 
     visit_players_widget = baskstat_team_player_widget_new (visit);
-    visit_players_playing = baskstat_team_playing_new (visit, visit_players_widget);
+    visit_players_playing = baskstat_team_playing_new (visit);
+
+    // central layout
+    central_layout = gtk_grid_new ();
+    gtk_grid_attach (GTK_GRID (central_layout), basket_court, 0, 0, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 1, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 1, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 2, 1, 1);
 
     // layout
     layout = gtk_grid_new ();
-    gtk_grid_attach (GTK_GRID (layout), local_players_widget, 0, 0, 1, 2);
-    gtk_grid_attach_next_to (GTK_GRID (layout), basket_court, local_players_widget, GTK_POS_RIGHT, 5, 1);
-    gtk_grid_attach_next_to (GTK_GRID (layout), visit_players_widget, basket_court, GTK_POS_RIGHT, 1, 2);
-
-    gtk_grid_attach_next_to (GTK_GRID (layout), local_players_playing, basket_court, GTK_POS_BOTTOM, 1, 1);
-    gtk_grid_attach_next_to (GTK_GRID (layout), visit_players_playing, local_players_playing, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach (GTK_GRID (layout), local_players_widget, 0, 0, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), central_layout, local_players_widget, GTK_POS_RIGHT, 5, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), visit_players_widget, central_layout, GTK_POS_RIGHT, 1, 1);
 
     gtk_container_add (GTK_CONTAINER (window), layout);
 

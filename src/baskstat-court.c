@@ -19,6 +19,7 @@
  */
 
 #include "baskstat-court.h"
+#include "baskstat-team.h"
 
 #include <stdlib.h>
 #include <librsvg/rsvg.h>
@@ -103,6 +104,7 @@ add_basket (GtkWidget       *widget,
 
     if (event->button == 1) {
         new_basket->path = DATA_DIR "/success.svg";
+        baskstat_team_new_basket (this->current_player, 2);
     } else if (event->button == 3) {
         new_basket->path = DATA_DIR "/fail.svg";
     }
@@ -178,7 +180,7 @@ baskstat_court_new ()
 {
     GtkWidget *obj;
     obj = g_object_new (BASKSTAT_TYPE_COURT, NULL);
-    gtk_widget_set_size_request (obj, 800, 500);
+    gtk_widget_set_size_request (obj, 800, 400);
     gtk_widget_add_events (obj, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
     g_signal_connect (G_OBJECT (obj), "draw", G_CALLBACK (draw_callback), NULL);

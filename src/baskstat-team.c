@@ -36,6 +36,29 @@ enum
   NUM_COLUMNS
 };
 
+static gboolean
+baskstat_team_iter_by_player (BaskstatTeam *team, BaskstatPlayer *p, GtkTreeIter *iter)
+{
+    GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget));
+    BaskstatPlayer *bp = NULL;
+    gboolean found = FALSE;
+
+    // finding the player in model
+    gtk_tree_model_get_iter_first (model, iter);
+    gtk_tree_model_get (model, iter, COLUMN_PLAYER, &bp, -1);
+    if (bp->number == p->number)
+        found = TRUE;
+    while (!found && gtk_tree_model_iter_next (model, iter)) {
+        gtk_tree_model_get (model, iter, COLUMN_PLAYER, &bp, -1);
+        if (bp->number == p->number) {
+            found = TRUE;
+            break;
+        }
+    }
+
+    return found;
+}
+
 static void
 baskstat_team_change_current_player (GtkToggleButton *button,
                                      BaskstatTeam *team)
@@ -267,6 +290,9 @@ baskstat_team_new (BaskstatCourt *court)
     g_snprintf (team->name, 255, "Team Name");
     team->playing = NULL;
     team->court = court;
+    team->team_score = 0;
+    team->score_widget = gtk_label_new ("");
+    gtk_label_set_markup (GTK_LABEL (team->score_widget), "<span size=\"larger\">0</span>");
     return obj;
 }
 
@@ -280,24 +306,46 @@ baskstat_team_class_init (BaskstatTeamClass *klass)
 {
 }
 
-void baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p)
+void
+baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p)
 {
     team->players = g_list_append (team->players, p);
     p->team = team;
 }
 
-GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team)
+GtkWidget *
+baskstat_team_player_widget_new (BaskstatTeam *team)
 {
     GtkWidget *widget = baskstat_team_player_widget (team->players);
+    team->player_widget = widget;
     return widget;
 }
 
-GtkWidget * baskstat_team_playing_new (BaskstatTeam *team, GtkWidget *players_widget)
+GtkWidget *
+baskstat_team_playing_new (BaskstatTeam *team)
 {
     GtkWidget *widget;
     widget = baskstat_team_playing (team);
-    g_signal_connect (G_OBJECT (gtk_tree_view_get_model (GTK_TREE_VIEW (players_widget))),
+    g_signal_connect (G_OBJECT (gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget))),
                       "row-changed", G_CALLBACK (reload_playing), team);
     team->playing = widget;
     return widget;
+}
+
+void
+baskstat_team_new_basket (BaskstatPlayer *p, gint score)
+{
+    char newtext[50];
+    GtkTreeIter iter;
+    BaskstatTeam *team = p->team;
+    GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget));
+
+    team->team_score += score;
+    p->points += score;
+
+    baskstat_team_iter_by_player (team, p, &iter);
+    gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_POINTS, p->points, -1);
+
+    g_snprintf (newtext, 50, "<span size=\"larger\">%d</span>", team->team_score);
+    gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
 }

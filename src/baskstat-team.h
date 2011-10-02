@@ -44,7 +44,10 @@ struct _BaskstatTeam {
     gchar name[255];
     GList *players;
     GtkWidget *playing;
+    GtkWidget *player_widget;
+    GtkWidget *score_widget;
     BaskstatCourt *court;
+    gint team_score;
 };
 
 struct _BaskstatTeamClass {
@@ -62,6 +65,7 @@ GType baskstat_team_get_type (void);
 GObject * baskstat_team_new (BaskstatCourt *court);
 void baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p);
 GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
-GtkWidget * baskstat_team_playing_new (BaskstatTeam *team, GtkWidget *players_widget);
+GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);
+void baskstat_team_new_basket (BaskstatPlayer *p, gint score);
 
 #endif
