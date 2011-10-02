@@ -60,7 +60,7 @@ baskstat_team_iter_by_player (BaskstatTeam *team, BaskstatPlayer *p, GtkTreeIter
 }
 
 static void
-baskstat_team_change_current_player (GtkToggleButton *button,
+baskstat_team_change_current_player (GtkButton *button,
                                      BaskstatTeam *team)
 {
     BaskstatPlayer *p = NULL;
@@ -68,14 +68,12 @@ baskstat_team_change_current_player (GtkToggleButton *button,
     gchar pnumber[3];
     const gchar *blabel;
 
-    if (gtk_toggle_button_get_active (button)) {
-        blabel = gtk_button_get_label (GTK_BUTTON (button));
-        for (l = team->players; l; l = l->next) {
-            p = (BaskstatPlayer*)l->data;
-            snprintf (pnumber, 3, "%d\n", p->number);
-            if (!strcmp (pnumber, blabel)) {
-                baskstat_court_set_current_player (BASKSTAT_COURT (team->court), p);
-            }
+    blabel = gtk_button_get_label (GTK_BUTTON (button));
+    for (l = team->players; l; l = l->next) {
+        p = (BaskstatPlayer*)l->data;
+        snprintf (pnumber, 3, "%d\n", p->number);
+        if (!strcmp (pnumber, blabel)) {
+            baskstat_court_set_current_player (BASKSTAT_COURT (team->court), p);
         }
     }
 }
@@ -85,7 +83,7 @@ static GtkWidget *
 baskstat_team_playing (BaskstatTeam *team)
 {
     GtkWidget *widget;
-    GtkWidget *radio = NULL, *prev = NULL;
+    GtkWidget *button = NULL, *prev = NULL;
     GList *l;
     gchar text[3] = {0};
     BaskstatPlayer *p;
@@ -105,17 +103,17 @@ baskstat_team_playing (BaskstatTeam *team)
             continue;
 
         snprintf (text, 3, "%d\n", p->number);
+        button = gtk_button_new_with_label (text);
         if (!prev) {
-            radio = gtk_radio_button_new_with_label (NULL, text);
-            gtk_grid_attach (GTK_GRID (widget), radio, 0, 0, 1, 1);
+            gtk_grid_attach (GTK_GRID (widget), button, 0, 0, 1, 1);
         } else {
-            radio = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (prev), text);
-            gtk_grid_attach_next_to (GTK_GRID (widget), radio, prev, GTK_POS_RIGHT, 1, 1);
+            gtk_grid_attach_next_to (GTK_GRID (widget), button, prev, GTK_POS_RIGHT, 1, 1);
         }
 
-        g_signal_connect (G_OBJECT (radio), "toggled", G_CALLBACK (baskstat_team_change_current_player), team);
-        prev = radio;
+        g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (baskstat_team_change_current_player), team);
+        prev = button;
     }
+
     gtk_widget_show_all (widget);
 
     return widget;
@@ -280,14 +278,14 @@ baskstat_team_player_widget (GList *player_list)
 }
 
 GObject *
-baskstat_team_new (BaskstatCourt *court)
+baskstat_team_new (BaskstatCourt *court, gchar *name)
 {
     GObject *obj;
     BaskstatTeam *team = NULL;
 
     obj = g_object_new (BASKSTAT_TYPE_TEAM, NULL);
     team = BASKSTAT_TEAM (obj);
-    g_snprintf (team->name, 255, "Team Name");
+    g_snprintf (team->name, 255, "%s", name);
     team->playing = NULL;
     team->court = court;
     team->team_score = 0;

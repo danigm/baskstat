@@ -42,6 +42,7 @@ struct _BaskstatCourt {
     /* instance members */
     GList *basket_object_list;
     BaskstatPlayer *current_player;
+    GtkLabel *current_player_widget;
 };
 
 struct _BaskstatCourtClass {
@@ -58,5 +59,6 @@ GType baskstat_court_get_type (void);
 
 GtkWidget * baskstat_court_new ();
 void baskstat_court_set_current_player (BaskstatCourt *court, BaskstatPlayer *p);
+GtkWidget * baskstat_court_current_player_widget (BaskstatCourt *court);
 
 #endif

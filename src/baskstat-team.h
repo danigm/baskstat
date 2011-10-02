@@ -62,7 +62,7 @@ GType baskstat_team_get_type (void);
  * Method definitions.
  */
 
-GObject * baskstat_team_new (BaskstatCourt *court);
+GObject * baskstat_team_new (BaskstatCourt *court, gchar *name);
 void baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p);
 GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
 GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);

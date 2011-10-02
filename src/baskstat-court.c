@@ -25,6 +25,8 @@
 #include <librsvg/rsvg.h>
 #include <librsvg/rsvg-cairo.h>
 
+#include <glib/gi18n.h>
+
 #define WFACTOR 30
 
 G_DEFINE_TYPE (BaskstatCourt, baskstat_court, GTK_TYPE_DRAWING_AREA);
@@ -179,12 +181,17 @@ GtkWidget *
 baskstat_court_new ()
 {
     GtkWidget *obj;
+    BaskstatCourt *court;
+
     obj = g_object_new (BASKSTAT_TYPE_COURT, NULL);
+    court = BASKSTAT_COURT (obj);
     gtk_widget_set_size_request (obj, 800, 400);
     gtk_widget_add_events (obj, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
     g_signal_connect (G_OBJECT (obj), "draw", G_CALLBACK (draw_callback), NULL);
     g_signal_connect (G_OBJECT (obj), "button-press-event", G_CALLBACK (add_basket), NULL);
+
+    court->current_player_widget = GTK_LABEL (gtk_label_new (_("Current player")));
     return obj;
 }
 
@@ -201,5 +208,15 @@ baskstat_court_class_init (BaskstatCourtClass *klass)
 void
 baskstat_court_set_current_player (BaskstatCourt *court, BaskstatPlayer *p)
 {
+    gchar text[200];
     court->current_player = p;
+
+    g_snprintf (text, 200, "%s: %d", p->team->name, p->number);
+    gtk_label_set_text (court->current_player_widget, text);
+}
+
+GtkWidget *
+baskstat_court_current_player_widget (BaskstatCourt *court)
+{
+    return GTK_WIDGET (court->current_player_widget);
 }

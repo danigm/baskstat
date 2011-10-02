@@ -71,8 +71,8 @@ main (int argc, char **argv)
     basket_court = baskstat_court_new ();
 
     // teams creation
-    local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court)));
-    visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court)));
+    local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court), _("local")));
+    visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (basket_court), _("visit")));
     for (i = 0; i < 12; i++) {
         BaskstatPlayer *p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;
@@ -81,6 +81,8 @@ main (int argc, char **argv)
         p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;
         baskstat_team_add_player (visit, p);
+
+        baskstat_court_set_current_player (BASKSTAT_COURT (basket_court), p);
     }
 
     local_player_list = local->players;
@@ -95,10 +97,11 @@ main (int argc, char **argv)
     // central layout
     central_layout = gtk_grid_new ();
     gtk_grid_attach (GTK_GRID (central_layout), basket_court, 0, 0, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 1, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 1, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (basket_court)), 0, 1, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 3, 1, 1);
 
     // layout
     layout = gtk_grid_new ();
