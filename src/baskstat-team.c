@@ -285,11 +285,12 @@ baskstat_team_new (BaskstatCourt *court, gchar *name)
 
     obj = g_object_new (BASKSTAT_TYPE_TEAM, NULL);
     team = BASKSTAT_TEAM (obj);
-    g_snprintf (team->name, 255, "%s", name);
     team->playing = NULL;
     team->court = court;
     team->team_score = 0;
     team->score_widget = gtk_label_new ("");
+    team->name_widget = gtk_entry_new ();
+    gtk_entry_set_text (GTK_ENTRY (team->name_widget), name);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), "<span font=\"40\">0</span>");
     return obj;
 }
@@ -346,4 +347,10 @@ baskstat_team_new_basket (BaskstatPlayer *p, gint score)
 
     g_snprintf (newtext, 50, "<span font=\"40\">%d</span>", team->team_score);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
+}
+
+const gchar *
+baskstat_team_name (BaskstatTeam *team)
+{
+    return gtk_entry_get_text (GTK_ENTRY (team->name_widget));
 }

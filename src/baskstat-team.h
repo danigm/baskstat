@@ -41,11 +41,11 @@ struct _BaskstatTeam {
     GObject parent;
 
     /* instance members */
-    gchar name[255];
     GList *players;
     GtkWidget *playing;
     GtkWidget *player_widget;
     GtkWidget *score_widget;
+    GtkWidget *name_widget;
     BaskstatCourt *court;
     gint team_score;
 };
@@ -67,5 +67,6 @@ void baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p);
 GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
 GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);
 void baskstat_team_new_basket (BaskstatPlayer *p, gint score);
+const gchar * baskstat_team_name (BaskstatTeam *team);
 
 #endif

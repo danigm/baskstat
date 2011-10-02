@@ -211,7 +211,7 @@ baskstat_court_set_current_player (BaskstatCourt *court, BaskstatPlayer *p)
     gchar text[200];
     court->current_player = p;
 
-    g_snprintf (text, 200, "%s: %d", p->team->name, p->number);
+    g_snprintf (text, 200, "%s: %d", baskstat_team_name (p->team), p->number);
     gtk_label_set_text (court->current_player_widget, text);
 }
 

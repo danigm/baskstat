@@ -98,10 +98,12 @@ main (int argc, char **argv)
     central_layout = gtk_grid_new ();
     gtk_grid_attach (GTK_GRID (central_layout), basket_court, 0, 0, 2, 1);
     gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (basket_court)), 0, 1, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 3, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local->name_widget, 0, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit->name_widget, 1, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 4, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 4, 1, 1);
 
     // layout
     layout = gtk_grid_new ();
