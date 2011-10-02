@@ -7,6 +7,8 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(includedir) $(GNOME_INCLUDEDIR) \
 bin_PROGRAMS = baskstat
 
 SOURCES = main.c \
+		  baskstat-team.h \
+		  baskstat-team.c \
 		  baskstat-player.h \
 		  baskstat-player.c \
 		  baskstat-court.h \
