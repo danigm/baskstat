@@ -290,7 +290,7 @@ baskstat_team_new (BaskstatCourt *court, gchar *name)
     team->court = court;
     team->team_score = 0;
     team->score_widget = gtk_label_new ("");
-    gtk_label_set_markup (GTK_LABEL (team->score_widget), "<span size=\"larger\">0</span>");
+    gtk_label_set_markup (GTK_LABEL (team->score_widget), "<span font=\"40\">0</span>");
     return obj;
 }
 
@@ -344,6 +344,6 @@ baskstat_team_new_basket (BaskstatPlayer *p, gint score)
     baskstat_team_iter_by_player (team, p, &iter);
     gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_POINTS, p->points, -1);
 
-    g_snprintf (newtext, 50, "<span size=\"larger\">%d</span>", team->team_score);
+    g_snprintf (newtext, 50, "<span font=\"40\">%d</span>", team->team_score);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
 }
