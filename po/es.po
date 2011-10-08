@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: baskstat 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-09-18 19:07+0200\n"
+"POT-Creation-Date: 2011-10-09 01:09+0200\n"
 "PO-Revision-Date: 2011-09-18 19:15+0100\n"
 "Last-Translator: Daniel Garcia Moreno <danigm@wadobo.com>\n"
 "Language-Team: danigm <danigm@wadobo.com>\n"
@@ -19,7 +19,104 @@ msgstr ""
 "X-Poedit-Country: SPAIN\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../src/main.c:450
+#: ../src/baskstat-window.c:65
+msgid "Open match"
+msgstr "Abrir partido"
+
+#: ../src/baskstat-window.c:107
+msgid "Save as"
+msgstr "Guardar como"
+
+#: ../src/baskstat-window.c:154
+msgid "BaskStat"
+msgstr ""
+
+#: ../src/baskstat-window.c:159
+msgid "translator-credits"
+msgstr ""
+
+#. Toplevel
+#: ../src/baskstat-window.c:168
+msgid "_File"
+msgstr "_Fichero"
+
+#: ../src/baskstat-window.c:169
+msgid "_Edit"
+msgstr "_Editar"
+
+#: ../src/baskstat-window.c:170
+msgid "Help"
+msgstr "Ayuda"
+
+#. File menu
+#: ../src/baskstat-window.c:174
+msgid "_New"
+msgstr "_Nuevo"
+
+#: ../src/baskstat-window.c:175
+msgid "Create a new file"
+msgstr "Crear un nuevo fichero"
+
+#: ../src/baskstat-window.c:178
+msgid "_Open"
+msgstr "_Abrir"
+
+#: ../src/baskstat-window.c:179
+msgid "Open a file"
+msgstr "Abrir un fichero"
+
+#: ../src/baskstat-window.c:182
+msgid "_Save"
+msgstr "_Guardar"
+
+#: ../src/baskstat-window.c:183
+msgid "Save current match"
+msgstr "Guardar el partido actual"
+
+#: ../src/baskstat-window.c:186
+msgid "_Quit"
+msgstr "_Salir"
+
+#: ../src/baskstat-window.c:187
+msgid "Quit"
+msgstr "Salir"
+
+#. edit menu
+#: ../src/baskstat-window.c:191 ../src/baskstat-window.c:194
+msgid "_Delete"
+msgstr "_Eliminar"
+
+#: ../src/baskstat-window.c:192 ../src/baskstat-window.c:195
+msgid "Delete last basket"
+msgstr "Eliminar el último objeto"
+
+#. Help menu
+#: ../src/baskstat-window.c:199 ../src/baskstat-window.c:200
+msgid "About"
+msgstr "Acerca de"
+
+#: ../src/baskstat-window.c:217
+#, c-format
+msgid "Could not merge baskstat-menu-ui.xml: %s"
+msgstr ""
+
+#: ../src/baskstat-window.c:257
 msgid "BaskStat - Basketball match stats"
 msgstr "BaskStat - Estadísticas de baloncesto"
 
+#. teams creation
+#: ../src/baskstat-window.c:264
+msgid "local"
+msgstr "local"
+
+#: ../src/baskstat-window.c:265
+msgid "visit"
+msgstr "visitante"
+
+#: ../src/baskstat-court.c:241
+msgid "Points:"
+msgstr "Puntos:"
+
+#: ../src/baskstat-court.c:276
+msgid "Current player"
+msgstr "Jugador actual"
