@@ -303,3 +303,20 @@ baskstat_court_basket_points_widget (BaskstatCourt *court)
 {
     return GTK_WIDGET (court->basket_points_widget);
 }
+
+void
+baskstat_court_remove_last (BaskstatCourt *court)
+{
+    gint width, height;
+    GList *l = g_list_last (court->basket_object_list);
+    if (!l) {
+        return;
+    }
+
+    court->basket_object_list = g_list_delete_link (court->basket_object_list, l);
+
+    width = gtk_widget_get_allocated_width (GTK_WIDGET (court));
+    height = gtk_widget_get_allocated_height (GTK_WIDGET (court));
+
+    gtk_widget_queue_draw_area (GTK_WIDGET (court), 0, 0, width, height);
+}

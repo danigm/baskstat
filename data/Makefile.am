@@ -1,6 +1,9 @@
 baskstatdir = $(datadir)/baskstat
 baskstat_DATA = *.svg
 
+baskstatuidir = $(datadir)/baskstat/ui
+baskstatui_DATA = ui/*.xml
+
 appdir = $(datadir)/applications/
 app_DATA = baskstat.desktop
 

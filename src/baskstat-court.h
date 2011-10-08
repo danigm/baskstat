@@ -64,5 +64,6 @@ GtkWidget * baskstat_court_new ();
 void baskstat_court_set_current_player (BaskstatCourt *court, BaskstatPlayer *p);
 GtkWidget * baskstat_court_current_player_widget (BaskstatCourt *court);
 GtkWidget * baskstat_court_basket_points_widget (BaskstatCourt *court);
+void baskstat_court_remove_last (BaskstatCourt *court);
 
 #endif
