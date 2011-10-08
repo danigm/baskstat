@@ -17,6 +17,7 @@ typedef struct _BaskstatWindow    BaskstatWindow;
 typedef struct _BaskstatWindowClass BaskstatWindowClass;
 
 typedef struct _BaskstatTeam BaskstatTeam;
+typedef struct _BaskstatPlayer BaskstatPlayer;
 
 struct _BaskstatWindow {
     GtkWindow parent;
@@ -40,6 +41,7 @@ GType baskstat_window_get_type (void);
  */
 
 GtkWidget * baskstat_window_new ();
+BaskstatPlayer * baskstat_window_get_player (BaskstatWindow *window, const gchar *team_name, gint player_number);
 void baskstat_window_serialize (BaskstatWindow *window, FILE *file);
 void baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node);
 

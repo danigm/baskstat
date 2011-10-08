@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
 #include "baskstat-team.h"
 
 #include "baskstat-player.h"
@@ -134,7 +135,8 @@ cell_edited (GtkCellRendererText *cell,
              const gchar         *new_text,
              gpointer             data)
 {
-    GtkTreeModel *model = (GtkTreeModel *)data;
+    GtkTreeView *tree = GTK_TREE_VIEW (data);
+    GtkTreeModel *model = gtk_tree_view_get_model (tree);
     GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
     GtkTreeIter iter;
     GValue value;
@@ -156,7 +158,8 @@ playing_toggled (GtkCellRendererToggle *cell,
                  gchar                 *path_str,
                  gpointer               data)
 {
-    GtkTreeModel *model = (GtkTreeModel *)data;
+    GtkTreeView *tree = GTK_TREE_VIEW (data);
+    GtkTreeModel *model = gtk_tree_view_get_model (tree);
     GtkTreeIter  iter;
     GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
     gboolean playing;
@@ -189,7 +192,7 @@ playing_toggled (GtkCellRendererToggle *cell,
 }
 
 static GtkWidget *
-baskstat_team_player_widget (GList *player_list)
+baskstat_team_player_widget (BaskstatTeam *team)
 {
     GtkWidget *widget;
     GtkListStore *model;
@@ -208,7 +211,7 @@ baskstat_team_player_widget (GList *player_list)
             G_TYPE_POINTER);
 
     /* add data to the list store */
-    for (l = player_list; l; l = l->next) {
+    for (l = team->players; l; l = l->next) {
         p = (BaskstatPlayer*)(l->data);
         gtk_list_store_append (model, &iter);
         gtk_list_store_set (model, &iter,
@@ -217,62 +220,73 @@ baskstat_team_player_widget (GList *player_list)
                 COLUMN_POINTS, p->points,
                 COLUMN_FOULTS, p->foults,
                 COLUMN_PLAYER, p,
-                COLUMN_LIST, player_list,
+                COLUMN_LIST, team->players,
                 -1);
     }
 
-    widget = gtk_tree_view_new_with_model (GTK_TREE_MODEL (model));
+    g_signal_connect (G_OBJECT (model), "row-changed", G_CALLBACK (reload_playing), team);
+
+    if (team->player_widget) {
+        GtkTreeModel *m;
+
+        widget = team->player_widget;
+        m = gtk_tree_view_get_model (GTK_TREE_VIEW (widget));
+        gtk_tree_view_set_model (GTK_TREE_VIEW (widget), GTK_TREE_MODEL (model));
+    } else {
+        widget = gtk_tree_view_new_with_model (GTK_TREE_MODEL (model));
+
+        renderer = gtk_cell_renderer_toggle_new ();
+        g_signal_connect (renderer, "toggled", G_CALLBACK (playing_toggled), widget);
+
+        column = gtk_tree_view_column_new_with_attributes ("",
+                renderer,
+                "active", COLUMN_PLAYING,
+                NULL);
+
+        /* set this column to a fixed sizing (of 50 pixels) */
+        gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),
+                GTK_TREE_VIEW_COLUMN_FIXED);
+        gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 50);
+        gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
+
+        gtk_tree_view_columns_autosize (GTK_TREE_VIEW (widget));
+        gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (widget), TRUE);
+
+        /* column for numbers */
+        renderer = gtk_cell_renderer_text_new ();
+        g_object_set (renderer, "editable", TRUE, NULL);
+        g_signal_connect (renderer, "edited",
+                G_CALLBACK (cell_edited), widget);
+        column = gtk_tree_view_column_new_with_attributes ("",
+                renderer,
+                "text",
+                COLUMN_NUMBER,
+                NULL);
+        gtk_tree_view_column_set_sort_column_id (column, COLUMN_NUMBER);
+        gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
+
+        /* column for points */
+        renderer = gtk_cell_renderer_text_new ();
+        column = gtk_tree_view_column_new_with_attributes ("",
+                renderer,
+                "text",
+                COLUMN_POINTS,
+                NULL);
+        gtk_tree_view_column_set_sort_column_id (column, COLUMN_POINTS);
+        gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
+
+        /* column for foults */
+        renderer = gtk_cell_renderer_text_new ();
+        column = gtk_tree_view_column_new_with_attributes ("",
+                renderer,
+                "text",
+                COLUMN_FOULTS,
+                NULL);
+        gtk_tree_view_column_set_sort_column_id (column, COLUMN_FOULTS);
+        gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
+    }
+
     g_object_unref (model);
-
-    renderer = gtk_cell_renderer_toggle_new ();
-    g_signal_connect (renderer, "toggled", G_CALLBACK (playing_toggled), model);
-
-    column = gtk_tree_view_column_new_with_attributes ("",
-            renderer,
-            "active", COLUMN_PLAYING,
-            NULL);
-
-    /* set this column to a fixed sizing (of 50 pixels) */
-    gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),
-            GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 50);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
-
-    gtk_tree_view_columns_autosize (GTK_TREE_VIEW (widget));
-    gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (widget), TRUE);
-
-    /* column for numbers */
-    renderer = gtk_cell_renderer_text_new ();
-    g_object_set (renderer, "editable", TRUE, NULL);
-    g_signal_connect (renderer, "edited",
-            G_CALLBACK (cell_edited), model);
-    column = gtk_tree_view_column_new_with_attributes ("",
-            renderer,
-            "text",
-            COLUMN_NUMBER,
-            NULL);
-    gtk_tree_view_column_set_sort_column_id (column, COLUMN_NUMBER);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
-
-    /* column for points */
-    renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("",
-            renderer,
-            "text",
-            COLUMN_POINTS,
-            NULL);
-    gtk_tree_view_column_set_sort_column_id (column, COLUMN_POINTS);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
-
-    /* column for foults */
-    renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("",
-            renderer,
-            "text",
-            COLUMN_FOULTS,
-            NULL);
-    gtk_tree_view_column_set_sort_column_id (column, COLUMN_FOULTS);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
 
     return widget;
 }
@@ -286,6 +300,7 @@ baskstat_team_new (BaskstatCourt *court, gchar *name)
     obj = g_object_new (BASKSTAT_TYPE_TEAM, NULL);
     team = BASKSTAT_TEAM (obj);
     team->playing = NULL;
+    team->player_widget = NULL;
     team->court = court;
     team->team_score = 0;
     team->score_widget = gtk_label_new ("");
@@ -315,7 +330,7 @@ baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p)
 GtkWidget *
 baskstat_team_player_widget_new (BaskstatTeam *team)
 {
-    GtkWidget *widget = baskstat_team_player_widget (team->players);
+    GtkWidget *widget = baskstat_team_player_widget (team);
     team->player_widget = widget;
     return widget;
 }
@@ -325,8 +340,6 @@ baskstat_team_playing_new (BaskstatTeam *team)
 {
     GtkWidget *widget;
     widget = baskstat_team_playing (team);
-    g_signal_connect (G_OBJECT (gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget))),
-                      "row-changed", G_CALLBACK (reload_playing), team);
     team->playing = widget;
     return widget;
 }
@@ -393,6 +406,40 @@ baskstat_team_serialize (BaskstatTeam *team, FILE *file)
 }
 
 void
-baskstat_team_deserialize (BaskstatTeam *team, JsonNode *node)
+baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj)
 {
+    JsonObject *o = NULL;
+    JsonArray *a = NULL;
+    GList *elements = NULL;
+    GList *l = NULL;
+    BaskstatPlayer *p = NULL;
+    char newtext[50];
+
+    const gchar *name = json_object_get_string_member (obj, "name");
+    a = json_object_get_array_member (obj, "players");
+
+    gtk_entry_set_text (GTK_ENTRY (team->name_widget), name);
+
+    l = team->players;
+    if (l) {
+        // removing current player list
+        g_list_free_full (team->players, (GDestroyNotify)g_object_unref);
+        team->players = NULL;
+    }
+
+    team->team_score;
+    for (elements = json_array_get_elements (a); elements->next; elements = elements->next) {
+        o = json_node_get_object (elements->data);
+        p = BASKSTAT_PLAYER (baskstat_player_new ());
+        p->number = json_object_get_int_member (o, "number");
+        p->points = json_object_get_int_member (o, "points");
+        baskstat_team_add_player (team, p);
+
+        team->team_score += p->points;
+    }
+
+    baskstat_team_player_widget (team);
+
+    g_snprintf (newtext, 50, "<span font=\"40\">%d</span>", team->team_score);
+    gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
 }

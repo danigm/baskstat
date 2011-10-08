@@ -71,6 +71,6 @@ void baskstat_team_new_basket (BaskstatPlayer *p, gint score);
 const gchar * baskstat_team_name (BaskstatTeam *team);
 
 void baskstat_team_serialize (BaskstatTeam *team, FILE *file);
-void baskstat_team_deserialize (BaskstatTeam *team, JsonNode *node);
+void baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj);
 
 #endif

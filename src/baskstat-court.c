@@ -20,6 +20,7 @@
 
 #include "baskstat-court.h"
 #include "baskstat-team.h"
+#include "baskstat-window.h"
 
 #include <stdlib.h>
 #include <librsvg/rsvg.h>
@@ -359,6 +360,48 @@ baskstat_court_serialize (BaskstatCourt *court, FILE *file)
 }
 
 void
-baskstat_court_deserialize (BaskstatCourt *court, JsonNode *node)
+baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array)
 {
+    JsonObject *o;
+    BasketObject *new_basket;
+    gint points = 0;
+    BaskstatPlayer *p = NULL;
+    BaskstatTeam *team = NULL;
+    const gchar *player_team;
+    gint player_number;
+    gfloat x, y;
+
+    gint width, height;
+    BaskstatCourt *court = BASKSTAT_COURT (window->basket_court);
+    GList *l = court->basket_object_list, *elements;
+
+    if (l) {
+        // removing current basket_object
+        g_list_free_full (l, (GDestroyNotify)g_free);
+        court->basket_object_list = NULL;
+    }
+
+    team->team_score;
+    for (elements = json_array_get_elements (array); elements->next; elements = elements->next) {
+        o = json_node_get_object (elements->data);
+        points = json_object_get_int_member (o, "points");
+        x = json_object_get_double_member (o, "x");
+        y = json_object_get_double_member (o, "y");
+
+        o = json_object_get_object_member (o, "player");
+        player_number = json_object_get_int_member (o, "number");
+        player_team = json_object_get_string_member (o, "team");
+
+        p = baskstat_window_get_player (window, player_team, player_number);
+
+        new_basket = baskstat_new_basket (p, points);
+        new_basket->x = x;
+        new_basket->y = y;
+
+        court->basket_object_list = g_list_append (court->basket_object_list, new_basket);
+    }
+
+    width = gtk_widget_get_allocated_width (GTK_WIDGET (court));
+    height = gtk_widget_get_allocated_height (GTK_WIDGET (court));
+    gtk_widget_queue_draw_area (GTK_WIDGET (court), 0, 0, width, height);
 }

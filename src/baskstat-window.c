@@ -44,7 +44,7 @@ open_dialog (GtkWidget *widget, BaskstatWindow *window)
             GTK_WINDOW (window),
             GTK_FILE_CHOOSER_ACTION_OPEN,
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-            GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+            GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
             NULL);
 
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
@@ -301,4 +301,48 @@ baskstat_window_serialize (BaskstatWindow *window, FILE *file)
 void
 baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node)
 {
+    JsonNode *n = NULL;
+    JsonObject *o = NULL;
+    JsonArray *a = NULL;
+
+    JsonObject *obj = json_node_get_object (node);
+    obj = json_object_get_object_member (obj, "match");
+
+    o = json_object_get_object_member (obj, "local");
+    // deserializing local team
+    o = json_object_get_object_member (o, "team");
+    baskstat_team_deserialize (window->local, o);
+
+    o = json_object_get_object_member (obj, "visit");
+    // deserializing visit team
+    o = json_object_get_object_member (o, "team");
+    baskstat_team_deserialize (window->visit, o);
+
+    a = json_object_get_array_member (obj, "court");
+    // deserializing court
+    baskstat_court_deserialize (window, a);
+}
+
+BaskstatPlayer *
+baskstat_window_get_player (BaskstatWindow *window, const gchar *team_name, gint player_number)
+{
+    BaskstatPlayer *p = NULL;
+    GList *players = NULL, *l = NULL;
+    if (!strcmp (team_name, baskstat_team_name (window->local))) {
+        players = window->local->players;
+    } else if (!strcmp (team_name, baskstat_team_name (window->visit))) {
+        players = window->visit->players;
+    }
+
+    if (!players)
+        return p;
+
+    for (l = players; l->next; l = l->next) {
+        p = BASKSTAT_PLAYER (l->data);
+        if (player_number == p->number) {
+            return p;
+        }
+    }
+
+    return NULL;
 }
