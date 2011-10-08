@@ -23,6 +23,7 @@
 
 #include <gtk/gtk.h>
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 typedef struct _BaskstatPlayer BaskstatPlayer;
 typedef struct _BaskstatCourt BaskstatCourt;
@@ -68,5 +69,8 @@ GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
 GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);
 void baskstat_team_new_basket (BaskstatPlayer *p, gint score);
 const gchar * baskstat_team_name (BaskstatTeam *team);
+
+JsonNode * baskstat_team_serialize (BaskstatTeam *team);
+void baskstat_team_deserialize (BaskstatTeam *team, JsonNode *node);
 
 #endif

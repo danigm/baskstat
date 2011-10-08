@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 #define BASKSTAT_TYPE_COURT            (baskstat_court_get_type ())
 #define BASKSTAT_COURT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), BASKSTAT_TYPE_COURT, BaskstatCourt))
@@ -65,5 +66,8 @@ void baskstat_court_set_current_player (BaskstatCourt *court, BaskstatPlayer *p)
 GtkWidget * baskstat_court_current_player_widget (BaskstatCourt *court);
 GtkWidget * baskstat_court_basket_points_widget (BaskstatCourt *court);
 void baskstat_court_remove_last (BaskstatCourt *court);
+
+JsonNode * baskstat_court_serialize (BaskstatCourt *court);
+void baskstat_court_deserialize (BaskstatCourt *court, JsonNode *node);
 
 #endif

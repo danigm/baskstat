@@ -22,6 +22,7 @@
 #define _BASKSTAT_PLAYER_H
 
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 typedef struct _BaskstatTeam BaskstatTeam;
 
@@ -63,5 +64,8 @@ GType baskstat_player_get_type (void);
  */
 
 GObject * baskstat_player_new ();
+
+JsonNode * baskstat_player_serialize (BaskstatPlayer *player);
+void baskstat_player_deserialize (BaskstatPlayer *player, JsonNode *node);
 
 #endif

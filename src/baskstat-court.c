@@ -320,3 +320,14 @@ baskstat_court_remove_last (BaskstatCourt *court)
 
     gtk_widget_queue_draw_area (GTK_WIDGET (court), 0, 0, width, height);
 }
+
+JsonNode *
+baskstat_court_serialize (BaskstatCourt *court)
+{
+    return NULL;
+}
+
+void
+baskstat_court_deserialize (BaskstatCourt *court, JsonNode *node)
+{
+}

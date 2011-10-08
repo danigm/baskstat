@@ -354,3 +354,14 @@ baskstat_team_name (BaskstatTeam *team)
 {
     return gtk_entry_get_text (GTK_ENTRY (team->name_widget));
 }
+
+JsonNode *
+baskstat_team_serialize (BaskstatTeam *team)
+{
+    return NULL;
+}
+
+void
+baskstat_team_deserialize (BaskstatTeam *team, JsonNode *node)
+{
+}

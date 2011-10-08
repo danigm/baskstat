@@ -52,3 +52,14 @@ static void
 baskstat_player_class_init (BaskstatPlayerClass *klass)
 {
 }
+
+JsonNode *
+baskstat_player_serialize (BaskstatPlayer *player)
+{
+    return NULL;
+}
+
+void
+baskstat_player_deserialize (BaskstatPlayer *player, JsonNode *node)
+{
+}

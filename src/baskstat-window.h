@@ -4,6 +4,7 @@
 
 #include <gtk/gtk.h>
 #include <glib-object.h>
+#include <json-glib/json-glib.h>
 
 #define BASKSTAT_TYPE_WINDOW            (baskstat_window_get_type ())
 #define BASKSTAT_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), BASKSTAT_TYPE_WINDOW, BaskstatWindow))
@@ -35,5 +36,7 @@ GType baskstat_window_get_type (void);
  */
 
 GtkWidget * baskstat_window_new ();
+JsonNode * baskstat_window_serialize (BaskstatWindow *window);
+void baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node);
 
 #endif
