@@ -23,6 +23,7 @@
 #include "baskstat-window.h"
 
 #include <stdlib.h>
+#include <locale.h>
 #include <librsvg/rsvg.h>
 #include <librsvg/rsvg-cairo.h>
 
@@ -341,6 +342,8 @@ baskstat_court_serialize (BaskstatCourt *court, FILE *file)
 
     snprintf (buffer, 255, "\n\"court\": \n[");
     fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    setlocale (LC_NUMERIC, "C");
 
     for (l = court->basket_object_list; l; l = l->next) {
         obj = (BasketObject*)(l->data);
