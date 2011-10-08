@@ -39,13 +39,30 @@ typedef struct {
 } BasketObject;
 
 static BasketObject *
-baskstat_new_basket ()
+baskstat_new_basket (BaskstatPlayer *p, gint points)
 {
     BasketObject *basket = malloc (sizeof (BasketObject));
-    basket->path = DATA_DIR "/success.svg";
+    switch (points) {
+        case 0:
+            basket->path = DATA_DIR "/fail.svg";
+            break;
+        case 1:
+            basket->path = DATA_DIR "/success1.svg";
+            break;
+        case 2:
+            basket->path = DATA_DIR "/success2.svg";
+            break;
+        case 3:
+            basket->path = DATA_DIR "/success3.svg";
+            break;
+        default:
+            basket->path = DATA_DIR "/success2.svg";
+            break;
+    }
+
     basket->x = 0;
     basket->y = 0;
-    basket->player = NULL;
+    basket->player = p;
 
     return basket;
 }
@@ -92,12 +109,22 @@ draw_svg (const gchar *path, cairo_t *cr, gint width, gint x, gint y)
     return TRUE;
 }
 
+static void
+baskstat_court_change_points_n (BaskstatCourt *court, gint n)
+{
+    gchar label[5];
+
+    g_snprintf (label, 5, "%d", n);
+    gtk_label_set_text (GTK_LABEL (court->basket_points_label), label);
+    court->basket_points = n;
+}
+
 static gboolean
 add_basket (GtkWidget       *widget,
             GdkEventButton  *event,
             gpointer        user_data)
 {
-    BasketObject *new_basket = baskstat_new_basket ();
+    BasketObject *new_basket = NULL;
     BaskstatCourt *this = BASKSTAT_COURT (widget);
     gint width, height;
 
@@ -105,11 +132,19 @@ add_basket (GtkWidget       *widget,
     height = gtk_widget_get_allocated_height (widget);
 
     if (event->button == 1) {
-        new_basket->path = DATA_DIR "/success.svg";
-        baskstat_team_new_basket (this->current_player, 2);
+        if (event->state & GDK_SHIFT_MASK) {
+            baskstat_court_change_points_n (this, 3);
+        } else if (event->state & GDK_CONTROL_MASK) {
+            baskstat_court_change_points_n (this, 1);
+        }
+        new_basket = baskstat_new_basket (this->current_player, this->basket_points);
+        baskstat_team_new_basket (this->current_player, this->basket_points);
     } else if (event->button == 3) {
-        new_basket->path = DATA_DIR "/fail.svg";
+        new_basket = baskstat_new_basket (this->current_player, 0);
     }
+
+    // setting default 2 points
+    baskstat_court_change_points_n (this, 2);
 
     new_basket->x = event->x / (float)width;
     new_basket->y = event->y / (float)width;
@@ -177,6 +212,46 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
     return FALSE;
 }
 
+static void
+baskstat_court_change_points (GtkButton *button,
+                              BaskstatCourt *court)
+{
+    const gchar *blabel;
+
+    blabel = gtk_button_get_label (GTK_BUTTON (button));
+    gtk_label_set_text (GTK_LABEL (court->basket_points_label), blabel);
+    court->basket_points = atoi (blabel);
+}
+
+static GtkWidget *
+basket_points_widget (BaskstatCourt *court)
+{
+    GtkWidget *layout;
+    GtkWidget *button1, *button2, *button3;
+    GtkWidget *label;
+
+    court->basket_points_label = gtk_label_new ("2");
+    label = gtk_label_new (_("Points:"));
+
+    layout = gtk_grid_new ();
+    button1 = gtk_button_new_with_label ("1");
+    button2 = gtk_button_new_with_label ("2");
+    button3 = gtk_button_new_with_label ("3");
+
+    gtk_grid_attach (GTK_GRID (layout), button1, 0, 0, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), button2, button1, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), button3, button2, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), label, button3, GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (layout), court->basket_points_label, label, GTK_POS_RIGHT, 1, 1);
+
+    g_signal_connect (G_OBJECT (button1), "clicked", G_CALLBACK (baskstat_court_change_points), court);
+    g_signal_connect (G_OBJECT (button2), "clicked", G_CALLBACK (baskstat_court_change_points), court);
+    g_signal_connect (G_OBJECT (button3), "clicked", G_CALLBACK (baskstat_court_change_points), court);
+
+    gtk_widget_show_all (layout);
+    return layout;
+}
+
 GtkWidget *
 baskstat_court_new ()
 {
@@ -192,6 +267,8 @@ baskstat_court_new ()
     g_signal_connect (G_OBJECT (obj), "button-press-event", G_CALLBACK (add_basket), NULL);
 
     court->current_player_widget = GTK_LABEL (gtk_label_new (_("Current player")));
+    court->basket_points = 2;
+    court->basket_points_widget = basket_points_widget (court);
     return obj;
 }
 
@@ -219,4 +296,10 @@ GtkWidget *
 baskstat_court_current_player_widget (BaskstatCourt *court)
 {
     return GTK_WIDGET (court->current_player_widget);
+}
+
+GtkWidget *
+baskstat_court_basket_points_widget (BaskstatCourt *court)
+{
+    return GTK_WIDGET (court->basket_points_widget);
 }
