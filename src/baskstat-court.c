@@ -393,7 +393,7 @@ baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array)
     }
 
     team->team_score;
-    for (elements = json_array_get_elements (array); elements->next; elements = elements->next) {
+    for (elements = json_array_get_elements (array); elements; elements = elements->next) {
         o = json_node_get_object (elements->data);
         points = json_object_get_int_member (o, "points");
         x = json_object_get_double_member (o, "x");

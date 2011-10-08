@@ -370,7 +370,7 @@ baskstat_window_get_player (BaskstatWindow *window, const gchar *team_name, gint
     if (!players)
         return p;
 
-    for (l = players; l->next; l = l->next) {
+    for (l = players; l; l = l->next) {
         p = BASKSTAT_PLAYER (l->data);
         if (player_number == p->number) {
             return p;

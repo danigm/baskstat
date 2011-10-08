@@ -429,7 +429,7 @@ baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj)
     }
 
     team->team_score;
-    for (elements = json_array_get_elements (a); elements->next; elements = elements->next) {
+    for (elements = json_array_get_elements (a); elements; elements = elements->next) {
         o = json_node_get_object (elements->data);
         p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = json_object_get_int_member (o, "number");
