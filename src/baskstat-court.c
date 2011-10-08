@@ -315,10 +315,14 @@ void
 baskstat_court_remove_last (BaskstatCourt *court)
 {
     gint width, height;
+    BasketObject *obj = NULL;
     GList *l = g_list_last (court->basket_object_list);
     if (!l) {
         return;
     }
+
+    obj = (BasketObject*)(l->data);
+    baskstat_team_new_basket (obj->player, -obj->points);
 
     court->basket_object_list = g_list_delete_link (court->basket_object_list, l);
 
