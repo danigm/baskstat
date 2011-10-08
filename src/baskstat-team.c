@@ -355,10 +355,41 @@ baskstat_team_name (BaskstatTeam *team)
     return gtk_entry_get_text (GTK_ENTRY (team->name_widget));
 }
 
-JsonNode *
-baskstat_team_serialize (BaskstatTeam *team)
+void
+baskstat_team_serialize (BaskstatTeam *team, FILE *file)
 {
-    return NULL;
+    char buffer[255];
+    GList *l;
+    BaskstatPlayer *p;
+
+    snprintf (buffer, 255, "\n\"team\": \n {");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n\"name\": \"%s\",", baskstat_team_name (team));
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n\"players\": [");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    for (l = team->players; l; l = l->next) {
+        p = BASKSTAT_PLAYER (l->data);
+        snprintf (buffer, 255, "\n{");
+
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"number\": %d, \"points\": %d", p->number, p->points);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+        if (l->next)
+            snprintf (buffer, 255, "},");
+        else
+            snprintf (buffer, 255, "}");
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+    }
+    snprintf (buffer, 255, "\n]");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n}");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
 }
 
 void

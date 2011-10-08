@@ -35,6 +35,7 @@ typedef struct {
     gchar *path;
     gfloat x;
     gfloat y;
+    gint points;
     BaskstatPlayer *player;
 } BasketObject;
 
@@ -62,6 +63,7 @@ baskstat_new_basket (BaskstatPlayer *p, gint points)
 
     basket->x = 0;
     basket->y = 0;
+    basket->points = points;
     basket->player = p;
 
     return basket;
@@ -321,10 +323,39 @@ baskstat_court_remove_last (BaskstatCourt *court)
     gtk_widget_queue_draw_area (GTK_WIDGET (court), 0, 0, width, height);
 }
 
-JsonNode *
-baskstat_court_serialize (BaskstatCourt *court)
+void
+baskstat_court_serialize (BaskstatCourt *court, FILE *file)
 {
-    return NULL;
+    char buffer[255];
+    GList *l;
+    BasketObject *obj;
+
+    snprintf (buffer, 255, "\n\"court\": \n[");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    for (l = court->basket_object_list; l; l = l->next) {
+        obj = (BasketObject*)(l->data);
+        snprintf (buffer, 255, "\n{");
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"x\": %f,", obj->x);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"y\": %f,", obj->y);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"points\": %d,", obj->points);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"player\": { \"team\": \"%s\", \"number\": %d}",
+                  baskstat_team_name (obj->player->team), obj->player->number);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+        if (l->next)
+            snprintf (buffer, 255, "},");
+        else
+            snprintf (buffer, 255, "}");
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+    }
+
+    snprintf (buffer, 255, "\n],");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
 }
 
 void

@@ -8,6 +8,11 @@
 #include <stdlib.h>
 #include <glib/gi18n.h>
 
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
 G_DEFINE_TYPE (BaskstatWindow, baskstat_window, GTK_TYPE_WINDOW);
 
 static void
@@ -31,6 +36,9 @@ static gboolean
 open_dialog (GtkWidget *widget, BaskstatWindow *window)
 {
     GtkWidget *dialog;
+    JsonParser *parser;
+    JsonNode *root;
+    GError *error;
 
     dialog = gtk_file_chooser_dialog_new (_("Open match"),
             GTK_WINDOW (window),
@@ -44,7 +52,21 @@ open_dialog (GtkWidget *widget, BaskstatWindow *window)
         char *filename;
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-        printf ("FILE: %s\n", filename);
+        parser = json_parser_new ();
+        error = NULL;
+        json_parser_load_from_file (parser, filename, &error);
+        if (error)
+        {
+            g_print ("Unable to parse `%s': %s\n", filename, error->message);
+            g_error_free (error);
+            g_object_unref (parser);
+            return FALSE;
+        }
+
+        root = json_parser_get_root (parser);
+        baskstat_window_deserialize (window, root);
+
+        g_object_unref (parser);
         g_free (filename);
     }
 
@@ -58,6 +80,7 @@ static gboolean
 save_dialog (GtkWidget *widget, BaskstatWindow *window)
 {
     GtkWidget *dialog;
+    JsonNode *root;
 
     dialog = gtk_file_chooser_dialog_new (_("Save as"),
             GTK_WINDOW (window),
@@ -69,9 +92,14 @@ save_dialog (GtkWidget *widget, BaskstatWindow *window)
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
         char *filename;
+        FILE *f;
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-        printf ("FILE: %s\n", filename);
+
+        f = fopen (filename, "w");
+        baskstat_window_serialize (window, f);
+        fclose (f);
+
         g_free (filename);
     }
 
@@ -192,8 +220,6 @@ baskstat_window_new ()
     GtkWidget *local_players_playing;
     GtkWidget *visit_players_playing;
 
-    BaskstatTeam *local = NULL, *visit = NULL;
-
     menu = generate_menu (window);
     gtk_window_set_title (GTK_WINDOW (window), _("BaskStat - Basketball match stats"));
     g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
@@ -202,35 +228,35 @@ baskstat_window_new ()
     window->basket_court = baskstat_court_new ();
 
     // teams creation
-    local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("local")));
-    visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("visit")));
+    window->local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("local")));
+    window->visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("visit")));
     for (i = 0; i < 12; i++) {
         BaskstatPlayer *p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;
-        baskstat_team_add_player (local, p);
+        baskstat_team_add_player (window->local, p);
 
         p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;
-        baskstat_team_add_player (visit, p);
+        baskstat_team_add_player (window->visit, p);
 
         baskstat_court_set_current_player (BASKSTAT_COURT (window->basket_court), p);
     }
 
-    local_players_widget = baskstat_team_player_widget_new (local);
-    local_players_playing = baskstat_team_playing_new (local);
+    local_players_widget = baskstat_team_player_widget_new (window->local);
+    local_players_playing = baskstat_team_playing_new (window->local);
 
-    visit_players_widget = baskstat_team_player_widget_new (visit);
-    visit_players_playing = baskstat_team_playing_new (visit);
+    visit_players_widget = baskstat_team_player_widget_new (window->visit);
+    visit_players_playing = baskstat_team_playing_new (window->visit);
 
     // central layout
     central_layout = gtk_grid_new ();
     gtk_grid_attach (GTK_GRID (central_layout), window->basket_court, 0, 0, 2, 1);
     gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court)), 0, 1, 1, 1);
     gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court)), 1, 1, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local->name_widget, 0, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit->name_widget, 1, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local->score_widget, 0, 3, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit->score_widget, 1, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->local->name_widget, 0, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->visit->name_widget, 1, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->local->score_widget, 0, 3, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->visit->score_widget, 1, 3, 1, 1);
     gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 4, 1, 1);
     gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 4, 1, 1);
 
@@ -248,10 +274,28 @@ baskstat_window_new ()
     return GTK_WIDGET (window);
 }
 
-JsonNode *
-baskstat_window_serialize (BaskstatWindow *window)
+void
+baskstat_window_serialize (BaskstatWindow *window, FILE *file)
 {
-    return NULL;
+    char buffer[255];
+    snprintf (buffer, 255, "{\n\"match\": {");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+    baskstat_court_serialize (BASKSTAT_COURT (window->basket_court), file);
+
+    snprintf (buffer, 255, "\n\"local\": {");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+    baskstat_team_serialize (window->local, file);
+    snprintf (buffer, 255, "\n},");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n\"visit\": {");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+    baskstat_team_serialize (window->visit, file);
+    snprintf (buffer, 255, "\n}");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "}\n}");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
 }
 
 void

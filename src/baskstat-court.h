@@ -67,7 +67,7 @@ GtkWidget * baskstat_court_current_player_widget (BaskstatCourt *court);
 GtkWidget * baskstat_court_basket_points_widget (BaskstatCourt *court);
 void baskstat_court_remove_last (BaskstatCourt *court);
 
-JsonNode * baskstat_court_serialize (BaskstatCourt *court);
+void baskstat_court_serialize (BaskstatCourt *court, FILE *file);
 void baskstat_court_deserialize (BaskstatCourt *court, JsonNode *node);
 
 #endif
