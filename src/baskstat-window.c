@@ -228,8 +228,8 @@ baskstat_window_new ()
     window->basket_court = baskstat_court_new ();
 
     // teams creation
-    window->local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("local")));
-    window->visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("visit")));
+    window->local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("local"), TRUE));
+    window->visit = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("visit"), FALSE));
     for (i = 0; i < 12; i++) {
         BaskstatPlayer *p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = i + 4;

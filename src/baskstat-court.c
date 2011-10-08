@@ -33,7 +33,7 @@
 G_DEFINE_TYPE (BaskstatCourt, baskstat_court, GTK_TYPE_DRAWING_AREA);
 
 typedef struct {
-    gchar *path;
+    gchar path[250];
     gfloat x;
     gfloat y;
     gint points;
@@ -44,23 +44,27 @@ static BasketObject *
 baskstat_new_basket (BaskstatPlayer *p, gint points)
 {
     BasketObject *basket = malloc (sizeof (BasketObject));
+    gchar *local = p->team->local ? "local" : "visit";
+    gchar *image;
     switch (points) {
         case 0:
-            basket->path = DATA_DIR "/fail.svg";
+            image = "fail";
             break;
         case 1:
-            basket->path = DATA_DIR "/success1.svg";
+            image = "success1";
             break;
         case 2:
-            basket->path = DATA_DIR "/success2.svg";
+            image = "success2";
             break;
         case 3:
-            basket->path = DATA_DIR "/success3.svg";
+            image = "success3";
             break;
         default:
-            basket->path = DATA_DIR "/success2.svg";
+            image = "success2";
             break;
     }
+
+    g_snprintf (basket->path, 250, "%s/%s-%s.svg", DATA_DIR, local, image);
 
     basket->x = 0;
     basket->y = 0;

@@ -49,6 +49,7 @@ struct _BaskstatTeam {
     GtkWidget *name_widget;
     BaskstatCourt *court;
     gint team_score;
+    gboolean local;
 };
 
 struct _BaskstatTeamClass {
@@ -63,7 +64,7 @@ GType baskstat_team_get_type (void);
  * Method definitions.
  */
 
-GObject * baskstat_team_new (BaskstatCourt *court, gchar *name);
+GObject * baskstat_team_new (BaskstatCourt *court, gchar *name, gboolean local);
 void baskstat_team_add_player (BaskstatTeam *team, BaskstatPlayer *p);
 GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
 GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);

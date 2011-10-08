@@ -292,13 +292,14 @@ baskstat_team_player_widget (BaskstatTeam *team)
 }
 
 GObject *
-baskstat_team_new (BaskstatCourt *court, gchar *name)
+baskstat_team_new (BaskstatCourt *court, gchar *name, gboolean local)
 {
     GObject *obj;
     BaskstatTeam *team = NULL;
 
     obj = g_object_new (BASKSTAT_TYPE_TEAM, NULL);
     team = BASKSTAT_TEAM (obj);
+    team->local = local;
     team->playing = NULL;
     team->player_widget = NULL;
     team->court = court;
