@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include "baskstat-window.h"
 #include "baskstat-player.h"
 #include "baskstat-court.h"
@@ -145,7 +147,18 @@ undo_cb (GtkWidget *widget, BaskstatWindow *window)
 static gboolean
 about_cb (GtkWidget *widget, BaskstatWindow *window)
 {
-    printf ("ABOUT\n");
+    const gchar *authors[] = {"Daniel Garcia <danigm@wadobo.com>", NULL};
+    const gchar *artists[] = {"Daniel Garcia <danigm@wadobo.com>", NULL};
+
+    gtk_show_about_dialog (GTK_WINDOW (window),
+            "name", _("BaskStat"),
+            "version", VERSION,
+            "authors", authors,
+            "artists", artists,
+            "website", "http://github.com/danigm/baskstat",
+            "translator-credits", _("translator-credits"),
+            NULL);
+
     return FALSE;
 }
 
