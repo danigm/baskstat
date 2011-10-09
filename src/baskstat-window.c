@@ -287,15 +287,17 @@ baskstat_window_new ()
 
     // central layout
     central_layout = gtk_grid_new ();
-    gtk_grid_attach (GTK_GRID (central_layout), aspect_frame, 0, 0, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court)), 0, 1, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court)), 1, 1, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), aspect_frame, 0, 0, 4, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court)), 0, 1, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court)), 2, 1, 2, 1);
     gtk_grid_attach (GTK_GRID (central_layout), window->local->name_widget, 0, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->visit->name_widget, 1, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->local->score_widget, 0, 3, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->visit->score_widget, 1, 3, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 4, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 1, 4, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->local->color_widget, 1, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->visit->name_widget, 2, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->visit->color_widget, 3, 2, 1, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->local->score_widget, 0, 3, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), window->visit->score_widget, 2, 3, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 4, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 2, 4, 2, 1);
 
     // layout
     layout = gtk_grid_new ();

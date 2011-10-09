@@ -18,13 +18,31 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <gdk/gdk.h>
 #include <string.h>
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
 #include "baskstat-team.h"
 
 #include "baskstat-player.h"
 #include "baskstat-court.h"
 
 G_DEFINE_TYPE (BaskstatTeam, baskstat_team, G_TYPE_OBJECT);
+
+gchar *TeamColorNames[] = {
+    "blue",
+    "dblue",
+    "red",
+    "green"
+};
+
+typedef enum {
+    COLOR_BLUE,
+    COLOR_DBLUE,
+    COLOR_RED,
+    COLOR_GREEN,
+    COLOR_END,
+} TeamColor;
 
 enum
 {
@@ -296,6 +314,13 @@ baskstat_team_new (BaskstatCourt *court, gchar *name, gboolean local)
 {
     GObject *obj;
     BaskstatTeam *team = NULL;
+    GtkTreeIter iter;
+    GtkListStore *colors;
+    GdkPixbuf *p;
+    GError *error = NULL;
+    GtkCellRenderer *renderer;
+    gchar path[250];
+    gint i;
 
     obj = g_object_new (BASKSTAT_TYPE_TEAM, NULL);
     team = BASKSTAT_TEAM (obj);
@@ -305,6 +330,27 @@ baskstat_team_new (BaskstatCourt *court, gchar *name, gboolean local)
     team->court = court;
     team->team_score = 0;
     team->score_widget = gtk_label_new ("");
+
+    // color widget
+    team->color_widget = gtk_combo_box_new ();
+    colors = gtk_list_store_new (1, GDK_TYPE_PIXBUF);
+    for (i = 0; i < COLOR_END; i++) {
+        g_snprintf (path, 250, "%s/%s-%s.svg", DATA_DIR, TeamColorNames[i], "success2");
+        p = rsvg_pixbuf_from_file (path, &error);
+        gtk_list_store_append (colors, &iter);
+        gtk_list_store_set (colors, &iter, 0, p, -1);
+    }
+    gtk_combo_box_set_model (GTK_COMBO_BOX (team->color_widget), GTK_TREE_MODEL (colors));
+    gtk_cell_layout_clear (GTK_CELL_LAYOUT (team->color_widget));
+    renderer = gtk_cell_renderer_pixbuf_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (team->color_widget), renderer, FALSE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (team->color_widget), renderer, "pixbuf", 0, NULL);
+    g_object_unref (colors);
+    gtk_combo_box_set_active (GTK_COMBO_BOX (team->color_widget), team->local ? 0 : 2);
+
+    // g_signal_connect (G_OBJECT (team->color_widget), "changed", color_changed_cb, team);
+    // end of color widget
+
     team->name_widget = gtk_entry_new ();
     gtk_entry_set_text (GTK_ENTRY (team->name_widget), name);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), "<span font=\"40\">0</span>");
@@ -382,6 +428,9 @@ baskstat_team_serialize (BaskstatTeam *team, FILE *file)
     snprintf (buffer, 255, "\n\"name\": \"%s\",", baskstat_team_name (team));
     fwrite (buffer, sizeof (char), strlen (buffer), file);
 
+    snprintf (buffer, 255, "\n\"color\": %d,", gtk_combo_box_get_active (GTK_COMBO_BOX (team->color_widget)));
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
     snprintf (buffer, 255, "\n\"players\": [");
     fwrite (buffer, sizeof (char), strlen (buffer), file);
 
@@ -420,6 +469,8 @@ baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj)
     a = json_object_get_array_member (obj, "players");
 
     gtk_entry_set_text (GTK_ENTRY (team->name_widget), name);
+    gtk_combo_box_set_active (GTK_COMBO_BOX (team->color_widget),
+                                json_object_get_int_member (obj, "color"));
 
     l = team->players;
     if (l) {
@@ -443,4 +494,10 @@ baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj)
 
     g_snprintf (newtext, 50, "<span font=\"40\">%d</span>", team->team_score);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
+}
+
+const gchar *
+baskstat_team_color_prefix (BaskstatTeam *team)
+{
+    return TeamColorNames[gtk_combo_box_get_active (GTK_COMBO_BOX (team->color_widget))];
 }

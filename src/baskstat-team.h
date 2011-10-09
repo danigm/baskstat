@@ -47,6 +47,7 @@ struct _BaskstatTeam {
     GtkWidget *player_widget;
     GtkWidget *score_widget;
     GtkWidget *name_widget;
+    GtkWidget *color_widget;
     BaskstatCourt *court;
     gint team_score;
     gboolean local;
@@ -70,6 +71,7 @@ GtkWidget * baskstat_team_player_widget_new (BaskstatTeam *team);
 GtkWidget * baskstat_team_playing_new (BaskstatTeam *team);
 void baskstat_team_new_basket (BaskstatPlayer *p, gint score);
 const gchar * baskstat_team_name (BaskstatTeam *team);
+const gchar * baskstat_team_color_prefix (BaskstatTeam *team);
 
 void baskstat_team_serialize (BaskstatTeam *team, FILE *file);
 void baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj);

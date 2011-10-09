@@ -46,10 +46,12 @@ baskstat_new_basket (BaskstatPlayer *p, gint points)
 {
     BasketObject *basket = malloc (sizeof (BasketObject));
     gchar *local = p->team->local ? "local" : "visit";
+    gchar *prefix = baskstat_team_color_prefix (p->team);
     gchar *image;
     switch (points) {
         case 0:
             image = "fail";
+            prefix = local;
             break;
         case 1:
             image = "success1";
@@ -65,7 +67,7 @@ baskstat_new_basket (BaskstatPlayer *p, gint points)
             break;
     }
 
-    g_snprintf (basket->path, 250, "%s/%s-%s.svg", DATA_DIR, local, image);
+    g_snprintf (basket->path, 250, "%s/%s-%s.svg", DATA_DIR, prefix, image);
 
     basket->x = 0;
     basket->y = 0;
