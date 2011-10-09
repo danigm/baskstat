@@ -246,6 +246,7 @@ baskstat_window_new ()
     GtkWidget *menu;
     GtkWidget *layout;
     GtkWidget *central_layout;
+    GtkWidget *aspect_frame;
 
     GtkWidget *local_players_widget;
     GtkWidget *visit_players_widget;
@@ -259,6 +260,9 @@ baskstat_window_new ()
 
     // basket court creation
     window->basket_court = baskstat_court_new ();
+    aspect_frame = gtk_aspect_frame_new ("", 0.5, 0.5, 0, TRUE);
+    gtk_container_add (GTK_CONTAINER (aspect_frame), window->basket_court);
+
 
     // teams creation
     window->local = BASKSTAT_TEAM (baskstat_team_new (BASKSTAT_COURT (window->basket_court), _("local"), TRUE));
@@ -283,7 +287,7 @@ baskstat_window_new ()
 
     // central layout
     central_layout = gtk_grid_new ();
-    gtk_grid_attach (GTK_GRID (central_layout), window->basket_court, 0, 0, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), aspect_frame, 0, 0, 2, 1);
     gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court)), 0, 1, 1, 1);
     gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court)), 1, 1, 1, 1);
     gtk_grid_attach (GTK_GRID (central_layout), window->local->name_widget, 0, 2, 1, 1);

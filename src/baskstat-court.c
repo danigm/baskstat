@@ -269,6 +269,8 @@ baskstat_court_new ()
     obj = g_object_new (BASKSTAT_TYPE_COURT, NULL);
     court = BASKSTAT_COURT (obj);
     gtk_widget_set_size_request (obj, 800, 400);
+    gtk_widget_set_hexpand (obj, TRUE);
+    gtk_widget_set_vexpand (obj, TRUE);
     gtk_widget_add_events (obj, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
     g_signal_connect (G_OBJECT (obj), "draw", G_CALLBACK (draw_callback), NULL);
