@@ -266,6 +266,10 @@ baskstat_window_new ()
     GtkWidget *local_players_playing;
     GtkWidget *visit_players_playing;
 
+    GtkWidget *current_player_widget;
+    GtkWidget *points_widget;
+    GtkWidget *timer;
+
     menu = generate_menu (window);
     gtk_window_set_title (GTK_WINDOW (window), _("BaskStat - Basketball match stats"));
     g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
@@ -297,19 +301,31 @@ baskstat_window_new ()
     visit_players_widget = baskstat_team_player_widget_new (window->visit);
     visit_players_playing = baskstat_team_playing_new (window->visit);
 
+    current_player_widget = baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court));
+    points_widget = baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court));
+
+    timer = GTK_WIDGET (BASKSTAT_COURT (window->basket_court)->timer);
+    gtk_widget_set_halign (timer, GTK_ALIGN_CENTER);
+
     // central layout
     central_layout = gtk_grid_new ();
-    gtk_grid_attach (GTK_GRID (central_layout), aspect_frame, 0, 0, 4, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_current_player_widget (BASKSTAT_COURT (window->basket_court)), 0, 1, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), baskstat_court_basket_points_widget (BASKSTAT_COURT (window->basket_court)), 2, 1, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->local->name_widget, 0, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->local->color_widget, 1, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->visit->name_widget, 2, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->visit->color_widget, 3, 2, 1, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->local->score_widget, 0, 3, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), window->visit->score_widget, 2, 3, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), local_players_playing, 0, 4, 2, 1);
-    gtk_grid_attach (GTK_GRID (central_layout), visit_players_playing, 2, 4, 2, 1);
+    gtk_grid_attach (GTK_GRID (central_layout), timer, 1, 0, 5, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), aspect_frame, timer, GTK_POS_BOTTOM, 4, 1);
+
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), current_player_widget, aspect_frame, GTK_POS_BOTTOM, 2, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), points_widget, current_player_widget, GTK_POS_RIGHT, 2, 1);
+
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->local->name_widget, current_player_widget, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->local->color_widget, window->local->name_widget, GTK_POS_RIGHT, 1, 1);
+
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->visit->name_widget, points_widget, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->visit->color_widget, window->visit->name_widget, GTK_POS_RIGHT, 1, 1);
+
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->local->score_widget, window->local->name_widget, GTK_POS_BOTTOM, 2, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), window->visit->score_widget, window->visit->name_widget, GTK_POS_BOTTOM, 2, 1);
+
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), local_players_playing, window->local->score_widget, GTK_POS_BOTTOM, 2, 1);
+    gtk_grid_attach_next_to (GTK_GRID (central_layout), visit_players_playing, window->visit->score_widget, GTK_POS_BOTTOM, 2, 1);
 
     // layout
     layout = gtk_grid_new ();
@@ -354,7 +370,6 @@ baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node)
 {
     JsonNode *n = NULL;
     JsonObject *o = NULL;
-    JsonArray *a = NULL;
 
     JsonObject *obj = json_node_get_object (node);
     obj = json_object_get_object_member (obj, "match");
@@ -369,9 +384,9 @@ baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node)
     o = json_object_get_object_member (o, "team");
     baskstat_team_deserialize (window->visit, o);
 
-    a = json_object_get_array_member (obj, "court");
+    o = json_object_get_object_member (obj, "court");
     // deserializing court
-    baskstat_court_deserialize (window, a);
+    baskstat_court_deserialize (window, o);
 
     baskstat_court_set_current_player (BASKSTAT_COURT (window->basket_court),
                                        BASKSTAT_PLAYER (window->local->players->data));

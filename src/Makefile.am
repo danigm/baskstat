@@ -14,6 +14,8 @@ SOURCES = main.c \
 		  baskstat-court.h \
 		  baskstat-window.h \
 		  baskstat-window.c \
+		  baskstat-timer.h \
+		  baskstat-timer.c \
 		  baskstat-court.c
 
 AM_CFLAGS = @GTK_CFLAGS@ \

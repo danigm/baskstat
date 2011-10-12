@@ -38,6 +38,7 @@ typedef struct _BaskstatCourt    BaskstatCourt;
 typedef struct _BaskstatCourtClass BaskstatCourtClass;
 
 typedef struct _BaskstatWindow BaskstatWindow;
+typedef struct _BaskstatTimer BaskstatTimer;
 
 struct _BaskstatCourt {
     GtkDrawingArea parent;
@@ -49,6 +50,7 @@ struct _BaskstatCourt {
     gint basket_points;
     GtkWidget *basket_points_widget;
     GtkWidget *basket_points_label;
+    BaskstatTimer *timer;
 };
 
 struct _BaskstatCourtClass {
@@ -70,6 +72,6 @@ GtkWidget * baskstat_court_basket_points_widget (BaskstatCourt *court);
 void baskstat_court_remove_last (BaskstatCourt *court);
 
 void baskstat_court_serialize (BaskstatCourt *court, FILE *file);
-void baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array);
+void baskstat_court_deserialize (BaskstatWindow *window, JsonObject *object);
 
 #endif

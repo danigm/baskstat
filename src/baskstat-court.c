@@ -21,6 +21,7 @@
 #include "baskstat-court.h"
 #include "baskstat-team.h"
 #include "baskstat-window.h"
+#include "baskstat-timer.h"
 
 #include <stdlib.h>
 #include <locale.h>
@@ -39,14 +40,16 @@ typedef struct {
     gfloat y;
     gint points;
     BaskstatPlayer *player;
+    gint quarter;
+    gdouble time;
 } BasketObject;
 
 static BasketObject *
-baskstat_new_basket (BaskstatPlayer *p, gint points)
+baskstat_new_basket (BaskstatPlayer *p, BaskstatTimer *t, gint points)
 {
     BasketObject *basket = malloc (sizeof (BasketObject));
     gchar *local = p->team->local ? "local" : "visit";
-    gchar *prefix = baskstat_team_color_prefix (p->team);
+    const gchar *prefix = baskstat_team_color_prefix (p->team);
     gchar *image;
     switch (points) {
         case 0:
@@ -73,6 +76,8 @@ baskstat_new_basket (BaskstatPlayer *p, gint points)
     basket->y = 0;
     basket->points = points;
     basket->player = p;
+    basket->quarter = t->quarter;
+    basket->time = baskstat_timer_current_time (t);
 
     return basket;
 }
@@ -147,10 +152,10 @@ add_basket (GtkWidget       *widget,
         } else if (event->state & GDK_CONTROL_MASK) {
             baskstat_court_change_points_n (this, 1);
         }
-        new_basket = baskstat_new_basket (this->current_player, this->basket_points);
+        new_basket = baskstat_new_basket (this->current_player, this->timer, this->basket_points);
         baskstat_team_new_basket (this->current_player, this->basket_points);
     } else if (event->button == 3) {
-        new_basket = baskstat_new_basket (this->current_player, 0);
+        new_basket = baskstat_new_basket (this->current_player, this->timer, 0);
     }
 
     // setting default 2 points
@@ -295,6 +300,7 @@ baskstat_court_new ()
     court->current_player_widget = GTK_LABEL (gtk_label_new (_("Current player")));
     court->basket_points = 2;
     court->basket_points_widget = basket_points_widget (court);
+    court->timer = BASKSTAT_TIMER (baskstat_timer_new ());
     return obj;
 }
 
@@ -358,14 +364,28 @@ baskstat_court_serialize (BaskstatCourt *court, FILE *file)
     GList *l;
     BasketObject *obj;
 
-    snprintf (buffer, 255, "\n\"court\": \n[");
+    setlocale (LC_NUMERIC, "C");
+
+    snprintf (buffer, 255, "\n\"court\": \n{");
     fwrite (buffer, sizeof (char), strlen (buffer), file);
 
-    setlocale (LC_NUMERIC, "C");
+    snprintf (buffer, 255, "\n\"timer\": \n{");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+    snprintf (buffer, 255, "\n\"quarter\": %d, \"time\": %f", court->timer->quarter, baskstat_timer_current_time (court->timer));
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+    snprintf (buffer, 255, "\n},");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n\"baskets\": \n[");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
 
     for (l = court->basket_object_list; l; l = l->next) {
         obj = (BasketObject*)(l->data);
         snprintf (buffer, 255, "\n{");
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"quarter\": %d,", obj->quarter);
+        fwrite (buffer, sizeof (char), strlen (buffer), file);
+        snprintf (buffer, 255, "\n\"time\": %f,", obj->time);
         fwrite (buffer, sizeof (char), strlen (buffer), file);
         snprintf (buffer, 255, "\n\"x\": %f,", obj->x);
         fwrite (buffer, sizeof (char), strlen (buffer), file);
@@ -384,21 +404,26 @@ baskstat_court_serialize (BaskstatCourt *court, FILE *file)
         fwrite (buffer, sizeof (char), strlen (buffer), file);
     }
 
-    snprintf (buffer, 255, "\n],");
+    snprintf (buffer, 255, "\n]");
+    fwrite (buffer, sizeof (char), strlen (buffer), file);
+
+    snprintf (buffer, 255, "\n},");
     fwrite (buffer, sizeof (char), strlen (buffer), file);
 }
 
 void
-baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array)
+baskstat_court_deserialize (BaskstatWindow *window, JsonObject *object)
 {
     JsonObject *o;
+    JsonArray *array;
     BasketObject *new_basket;
     gint points = 0;
     BaskstatPlayer *p = NULL;
     BaskstatTeam *team = NULL;
     const gchar *player_team;
     gint player_number;
-    gfloat x, y;
+    gfloat x, y, time;
+    gint quarter;
 
     gint width, height;
     BaskstatCourt *court = BASKSTAT_COURT (window->basket_court);
@@ -410,12 +435,20 @@ baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array)
         court->basket_object_list = NULL;
     }
 
-    team->team_score;
+    o = json_object_get_object_member (object, "timer");
+    baskstat_timer_set_quarter (court->timer, json_object_get_int_member (o, "quarter"));
+    court->timer->time = 10 * 60 - json_object_get_double_member (o, "time");
+    baskstat_timer_update (court->timer);
+
+    array = json_object_get_array_member (object, "baskets");
     for (elements = json_array_get_elements (array); elements; elements = elements->next) {
         o = json_node_get_object (elements->data);
         points = json_object_get_int_member (o, "points");
         x = json_object_get_double_member (o, "x");
         y = json_object_get_double_member (o, "y");
+
+        quarter = json_object_get_int_member (o, "quarter");
+        time = json_object_get_double_member (o, "time");
 
         o = json_object_get_object_member (o, "player");
         player_number = json_object_get_int_member (o, "number");
@@ -423,9 +456,11 @@ baskstat_court_deserialize (BaskstatWindow *window, JsonArray *array)
 
         p = baskstat_window_get_player (window, player_team, player_number);
 
-        new_basket = baskstat_new_basket (p, points);
+        new_basket = baskstat_new_basket (p, court->timer, points);
         new_basket->x = x;
         new_basket->y = y;
+        new_basket->quarter = quarter;
+        new_basket->time = time;
 
         court->basket_object_list = g_list_append (court->basket_object_list, new_basket);
     }
