@@ -133,9 +133,41 @@ save_dialog (GtkWidget *widget, BaskstatWindow *window)
 }
 
 static gboolean
+close_win_cb (GtkWidget *widget, BaskstatWindow *window)
+{
+    gtk_widget_destroy (widget);
+    return FALSE;
+}
+
+static gboolean
+report_cb (GtkWidget *widget, cairo_t *cr, BaskstatWindow *window)
+{
+    gint width, height;
+
+    width = gtk_widget_get_allocated_width (widget);
+    height = gtk_widget_get_allocated_height (widget);
+
+    baskstat_window_simple_report (window, cr, width, height);
+    return FALSE;
+}
+
+static gboolean
 make_report (GtkWidget *widget, BaskstatWindow *window)
 {
-    printf ("REPORT\n");
+    cairo_surface_t *surface = NULL;
+    cairo_t *cr;
+
+    GtkWidget *w;
+    GtkWidget *darea;
+
+    w = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_size_request (w, 600, 700);
+    darea = gtk_drawing_area_new ();
+    g_signal_connect (G_OBJECT (darea), "draw", G_CALLBACK (report_cb), window);
+
+    gtk_container_add (GTK_CONTAINER (w), darea);
+    g_signal_connect (w, "destroy", G_CALLBACK (close_win_cb), NULL);
+    gtk_widget_show_all (w);
 }
 
 static gboolean
@@ -414,4 +446,30 @@ baskstat_window_get_player (BaskstatWindow *window, const gchar *team_name, gint
     }
 
     return NULL;
+}
+
+void
+baskstat_window_simple_report (BaskstatWindow *window, cairo_t *cr, gint width, gint height)
+{
+    int w;
+    int h;
+    PangoLayout *layout;
+    gchar text[250];
+
+    cairo_set_source_rgba (cr, 1, 1, 1, 1);
+    cairo_rectangle (cr, 0, 0, width, height);
+
+    cairo_fill (cr);
+
+    cairo_set_source_rgba (cr, 0, 0, 0, 1);
+
+    layout = pango_cairo_create_layout (cr);
+    g_snprintf (text, 250, "<b><u>Report - %s vs %s</u></b>", baskstat_team_name (window->local), baskstat_team_name (window->visit));
+    pango_layout_set_markup (layout, text, -1);
+    pango_layout_get_size (layout, &w, &h);
+    pango_layout_set_alignment (layout, PANGO_ALIGN_LEFT);
+
+    cairo_translate (cr, 10, 10);
+    pango_cairo_show_layout (cr, layout);
+    cairo_translate (cr, -10, -10);
 }

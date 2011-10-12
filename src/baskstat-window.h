@@ -64,4 +64,6 @@ BaskstatPlayer * baskstat_window_get_player (BaskstatWindow *window, const gchar
 void baskstat_window_serialize (BaskstatWindow *window, FILE *file);
 void baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node);
 
+void baskstat_window_simple_report (BaskstatWindow *window, cairo_t *cr, gint width, gint height);
+
 #endif
