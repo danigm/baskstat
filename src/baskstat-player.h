@@ -41,6 +41,7 @@ struct _BaskstatPlayer {
 
     /* instance members */
     gint number;
+    gchar *name;
     gboolean playing;
     gint points;
     gint rebounds;

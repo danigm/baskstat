@@ -48,6 +48,7 @@ enum
 {
   COLUMN_PLAYING,
   COLUMN_NUMBER,
+  COLUMN_NAME,
   COLUMN_POINTS,
   COLUMN_FOULTS,
   COLUMN_PLAYER,
@@ -76,6 +77,27 @@ baskstat_team_iter_by_player (BaskstatTeam *team, BaskstatPlayer *p, GtkTreeIter
     }
 
     return found;
+}
+
+static void
+reload_players_foults (BaskstatTeam *team)
+{
+    char newtext[200];
+    GtkTreeIter iter;
+    GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget));
+    GList *l;
+    BaskstatPlayer *player;
+
+    for (l = team->players; l; l = l->next) {
+        player = BASKSTAT_PLAYER (l->data);
+        baskstat_team_iter_by_player (team, player, &iter);
+
+        if (player->foults == 5) {
+            g_snprintf (newtext, 200, "<span color=\"red\">%s</span>", player->name);
+            gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_NAME,
+                    newtext, -1);
+        }
+    }
 }
 
 static void
@@ -172,6 +194,37 @@ cell_edited (GtkCellRendererText *cell,
 }
 
 static void
+name_cell_edited (GtkCellRendererText *cell,
+                  const gchar         *path_string,
+                  const gchar         *new_text,
+                  gpointer             data)
+{
+    GtkTreeView *tree = GTK_TREE_VIEW (data);
+    GtkTreeModel *model = gtk_tree_view_get_model (tree);
+    GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
+    GtkTreeIter iter;
+    GValue value;
+    BaskstatPlayer *p;
+    gchar text[200];
+
+    gtk_tree_model_get_iter (model, &iter, path);
+
+    gtk_tree_model_get (model, &iter, COLUMN_PLAYER, &p, -1);
+    p->name = g_strdup (new_text);
+
+    if (p->foults < 5) {
+        g_snprintf (text, 200, "%s", p->name);
+    } else {
+        g_snprintf (text, 200, "<span color=\"red\">%s</span>", p->name);
+    }
+
+    gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_NAME,
+            text, -1);
+
+    gtk_tree_path_free (path);
+}
+
+static void
 playing_toggled (GtkCellRendererToggle *cell,
                  gchar                 *path_str,
                  gpointer               data)
@@ -190,6 +243,10 @@ playing_toggled (GtkCellRendererToggle *cell,
     gtk_tree_model_get (model, &iter, COLUMN_PLAYING, &playing, -1);
     gtk_tree_model_get (model, &iter, COLUMN_PLAYER, &player, -1);
     gtk_tree_model_get (model, &iter, COLUMN_LIST, &list, -1);
+
+    if (player->foults == 5) {
+        return;
+    }
 
     for (l = list; l; l = l->next) {
         if (((BaskstatPlayer*)(l->data))->playing) {
@@ -223,6 +280,7 @@ baskstat_team_player_widget (BaskstatTeam *team)
     model = gtk_list_store_new (NUM_COLUMNS,
             G_TYPE_BOOLEAN,
             G_TYPE_UINT,
+            G_TYPE_STRING,
             G_TYPE_UINT,
             G_TYPE_UINT,
             G_TYPE_POINTER,
@@ -235,6 +293,7 @@ baskstat_team_player_widget (BaskstatTeam *team)
         gtk_list_store_set (model, &iter,
                 COLUMN_PLAYING, p->playing,
                 COLUMN_NUMBER, p->number,
+                COLUMN_NAME, p->name,
                 COLUMN_POINTS, p->points,
                 COLUMN_FOULTS, p->foults,
                 COLUMN_PLAYER, p,
@@ -275,7 +334,7 @@ baskstat_team_player_widget (BaskstatTeam *team)
         g_object_set (renderer, "editable", TRUE, NULL);
         g_signal_connect (renderer, "edited",
                 G_CALLBACK (cell_edited), widget);
-        column = gtk_tree_view_column_new_with_attributes ("",
+        column = gtk_tree_view_column_new_with_attributes ("#",
                 renderer,
                 "text",
                 COLUMN_NUMBER,
@@ -283,9 +342,22 @@ baskstat_team_player_widget (BaskstatTeam *team)
         gtk_tree_view_column_set_sort_column_id (column, COLUMN_NUMBER);
         gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
 
+        /* column for name */
+        renderer = gtk_cell_renderer_text_new ();
+        g_object_set (renderer, "editable", TRUE, NULL);
+        g_signal_connect (renderer, "edited",
+                G_CALLBACK (name_cell_edited), widget);
+        column = gtk_tree_view_column_new_with_attributes ("N",
+                renderer,
+                "markup",
+                COLUMN_NAME,
+                NULL);
+        gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
+        gtk_tree_view_append_column (GTK_TREE_VIEW (widget), column);
+
         /* column for points */
         renderer = gtk_cell_renderer_text_new ();
-        column = gtk_tree_view_column_new_with_attributes ("",
+        column = gtk_tree_view_column_new_with_attributes ("P",
                 renderer,
                 "text",
                 COLUMN_POINTS,
@@ -295,7 +367,7 @@ baskstat_team_player_widget (BaskstatTeam *team)
 
         /* column for foults */
         renderer = gtk_cell_renderer_text_new ();
-        column = gtk_tree_view_column_new_with_attributes ("",
+        column = gtk_tree_view_column_new_with_attributes ("F",
                 renderer,
                 "text",
                 COLUMN_FOULTS,
@@ -329,6 +401,7 @@ baskstat_team_new (BaskstatCourt *court, gchar *name, gboolean local)
     team->player_widget = NULL;
     team->court = court;
     team->team_score = 0;
+    team->team_foults = 0;
     team->score_widget = gtk_label_new ("");
 
     // color widget
@@ -439,7 +512,11 @@ baskstat_team_serialize (BaskstatTeam *team, FILE *file)
         snprintf (buffer, 255, "\n{");
 
         fwrite (buffer, sizeof (char), strlen (buffer), file);
-        snprintf (buffer, 255, "\n\"number\": %d, \"points\": %d", p->number, p->points);
+        snprintf (buffer, 255, "\n\"number\": %d, "
+                               "\"name\": \"%s\", "
+                               "\"points\": %d, "
+                               "\"foults\": %d",
+                  p->number, p->name, p->points, p->foults);
         fwrite (buffer, sizeof (char), strlen (buffer), file);
 
         if (l->next)
@@ -485,12 +562,15 @@ baskstat_team_deserialize (BaskstatTeam *team, JsonObject *obj)
         p = BASKSTAT_PLAYER (baskstat_player_new ());
         p->number = json_object_get_int_member (o, "number");
         p->points = json_object_get_int_member (o, "points");
+        p->name = g_strdup (json_object_get_string_member (o, "name"));
+        p->foults = json_object_get_int_member (o, "foults");
         baskstat_team_add_player (team, p);
 
         team->team_score += p->points;
     }
 
     baskstat_team_player_widget (team);
+    reload_players_foults (team);
 
     g_snprintf (newtext, 50, "<span font=\"40\">%d</span>", team->team_score);
     gtk_label_set_markup (GTK_LABEL (team->score_widget), newtext);
@@ -501,3 +581,31 @@ baskstat_team_color_prefix (BaskstatTeam *team)
 {
     return TeamColorNames[gtk_combo_box_get_active (GTK_COMBO_BOX (team->color_widget))];
 }
+
+void
+baskstat_team_foult (BaskstatTeam *team, BaskstatPlayer *player)
+{
+    char newtext[200];
+    GtkTreeIter iter;
+    GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (team->player_widget));
+
+    baskstat_team_iter_by_player (team, player, &iter);
+
+    if (player->foults < 5) {
+        team->team_foults += 1;
+        player->foults += 1;
+
+        gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_FOULTS, player->foults, -1);
+    }
+
+    if (player->foults == 5) {
+        player->playing = FALSE;
+        gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_PLAYING, FALSE, -1);
+        baskstat_team_playing (team);
+
+        g_snprintf (newtext, 200, "<span color=\"red\">%s</span>", player->name);
+        gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_NAME,
+            newtext, -1);
+    }
+}
+

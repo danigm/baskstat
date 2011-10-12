@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <glib/gi18n.h>
+
 #include "baskstat-player.h"
 
 G_DEFINE_TYPE (BaskstatPlayer, baskstat_player, G_TYPE_OBJECT);
@@ -39,6 +41,7 @@ baskstat_player_new ()
     p->assists = 0;
     p->turnover = 0;
     p->foults = 0;
+    p->name = g_strdup (_("name"));
 
     return obj;
 }
@@ -49,6 +52,20 @@ baskstat_player_init (BaskstatPlayer *self)
 }
 
 static void
+baskstat_player_finalize (GObject *object)
+{
+    BaskstatPlayer *p = BASKSTAT_PLAYER (object);
+
+    if (p->name) {
+        g_free (p->name);
+    }
+
+    G_OBJECT_CLASS (baskstat_player_parent_class)->finalize (object);
+}
+
+static void
 baskstat_player_class_init (BaskstatPlayerClass *klass)
 {
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    object_class->finalize = baskstat_player_finalize;
 }

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: baskstat 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-09 01:09+0200\n"
+"POT-Creation-Date: 2011-10-12 10:47+0200\n"
 "PO-Revision-Date: 2011-09-18 19:15+0100\n"
 "Last-Translator: Daniel Garcia Moreno <danigm@wadobo.com>\n"
 "Language-Team: danigm <danigm@wadobo.com>\n"
@@ -19,104 +19,113 @@ msgstr ""
 "X-Poedit-Country: SPAIN\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
+#: ../src/baskstat-player.c:44
+msgid "name"
+msgstr "nombre"
+
 #: ../src/baskstat-window.c:65
 msgid "Open match"
 msgstr "Abrir partido"
 
-#: ../src/baskstat-window.c:107
+#: ../src/baskstat-window.c:109
 msgid "Save as"
 msgstr "Guardar como"
 
-#: ../src/baskstat-window.c:154
+#: ../src/baskstat-window.c:156
 msgid "BaskStat"
 msgstr ""
 
-#: ../src/baskstat-window.c:159
+#: ../src/baskstat-window.c:161
 msgid "translator-credits"
 msgstr ""
 
 #. Toplevel
-#: ../src/baskstat-window.c:168
+#: ../src/baskstat-window.c:170
 msgid "_File"
 msgstr "_Fichero"
 
-#: ../src/baskstat-window.c:169
+#: ../src/baskstat-window.c:171
 msgid "_Edit"
 msgstr "_Editar"
 
-#: ../src/baskstat-window.c:170
+#: ../src/baskstat-window.c:172
 msgid "Help"
 msgstr "Ayuda"
 
 #. File menu
-#: ../src/baskstat-window.c:174
+#: ../src/baskstat-window.c:176
 msgid "_New"
 msgstr "_Nuevo"
 
-#: ../src/baskstat-window.c:175
+#: ../src/baskstat-window.c:177
 msgid "Create a new file"
 msgstr "Crear un nuevo fichero"
 
-#: ../src/baskstat-window.c:178
+#: ../src/baskstat-window.c:180
 msgid "_Open"
 msgstr "_Abrir"
 
-#: ../src/baskstat-window.c:179
+#: ../src/baskstat-window.c:181
 msgid "Open a file"
 msgstr "Abrir un fichero"
 
-#: ../src/baskstat-window.c:182
+#: ../src/baskstat-window.c:184
 msgid "_Save"
 msgstr "_Guardar"
 
-#: ../src/baskstat-window.c:183
+#: ../src/baskstat-window.c:185
 msgid "Save current match"
 msgstr "Guardar el partido actual"
 
-#: ../src/baskstat-window.c:186
+#: ../src/baskstat-window.c:188
 msgid "_Quit"
 msgstr "_Salir"
 
-#: ../src/baskstat-window.c:187
+#: ../src/baskstat-window.c:189
 msgid "Quit"
 msgstr "Salir"
 
 #. edit menu
-#: ../src/baskstat-window.c:191 ../src/baskstat-window.c:194
+#: ../src/baskstat-window.c:193 ../src/baskstat-window.c:196
 msgid "_Delete"
 msgstr "_Eliminar"
 
-#: ../src/baskstat-window.c:192 ../src/baskstat-window.c:195
+#: ../src/baskstat-window.c:194 ../src/baskstat-window.c:197
 msgid "Delete last basket"
 msgstr "Eliminar el último objeto"
 
 #. Help menu
-#: ../src/baskstat-window.c:199 ../src/baskstat-window.c:200
+#: ../src/baskstat-window.c:201 ../src/baskstat-window.c:202
 msgid "About"
 msgstr "Acerca de"
 
-#: ../src/baskstat-window.c:217
+#: ../src/baskstat-window.c:219
 #, c-format
 msgid "Could not merge baskstat-menu-ui.xml: %s"
 msgstr ""
 
-#: ../src/baskstat-window.c:257
+#: ../src/baskstat-window.c:260
 msgid "BaskStat - Basketball match stats"
 msgstr "BaskStat - Estadísticas de baloncesto"
 
 #. teams creation
-#: ../src/baskstat-window.c:264
+#: ../src/baskstat-window.c:270
 msgid "local"
 msgstr "local"
 
-#: ../src/baskstat-window.c:265
+#: ../src/baskstat-window.c:271
 msgid "visit"
 msgstr "visitante"
 
-#: ../src/baskstat-court.c:241
+#: ../src/baskstat-court.c:253
 msgid "Points:"
 msgstr "Puntos:"
 
-#: ../src/baskstat-court.c:276
+#. foult
+#: ../src/baskstat-court.c:271
+msgid "foult"
+msgstr "falta"
+
+#: ../src/baskstat-court.c:295
 msgid "Current player"
 msgstr "Jugador actual"

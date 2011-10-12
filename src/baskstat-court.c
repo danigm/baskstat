@@ -223,6 +223,13 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 }
 
 static void
+baskstat_court_foult (GtkButton *button,
+                      BaskstatCourt *court)
+{
+    baskstat_team_foult (court->current_player->team, court->current_player);
+}
+
+static void
 baskstat_court_change_points (GtkButton *button,
                               BaskstatCourt *court)
 {
@@ -239,6 +246,8 @@ basket_points_widget (BaskstatCourt *court)
     GtkWidget *layout;
     GtkWidget *button1, *button2, *button3;
     GtkWidget *label;
+
+    GtkWidget *foult_button;
 
     court->basket_points_label = gtk_label_new ("2");
     label = gtk_label_new (_("Points:"));
@@ -257,6 +266,11 @@ basket_points_widget (BaskstatCourt *court)
     g_signal_connect (G_OBJECT (button1), "clicked", G_CALLBACK (baskstat_court_change_points), court);
     g_signal_connect (G_OBJECT (button2), "clicked", G_CALLBACK (baskstat_court_change_points), court);
     g_signal_connect (G_OBJECT (button3), "clicked", G_CALLBACK (baskstat_court_change_points), court);
+
+    // foult
+    foult_button = gtk_button_new_with_label (_("foult"));
+    gtk_grid_attach_next_to (GTK_GRID (layout), foult_button, court->basket_points_label, GTK_POS_RIGHT, 1, 1);
+    g_signal_connect (G_OBJECT (foult_button), "clicked", G_CALLBACK (baskstat_court_foult), court);
 
     gtk_widget_show_all (layout);
     return layout;

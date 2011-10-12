@@ -82,6 +82,8 @@ open_dialog (GtkWidget *widget, BaskstatWindow *window)
             g_print ("Unable to parse `%s': %s\n", filename, error->message);
             g_error_free (error);
             g_object_unref (parser);
+            gtk_widget_destroy (dialog);
+            g_free (filename);
             return FALSE;
         }
 
@@ -360,6 +362,9 @@ baskstat_window_deserialize (BaskstatWindow *window, JsonNode *node)
     a = json_object_get_array_member (obj, "court");
     // deserializing court
     baskstat_court_deserialize (window, a);
+
+    baskstat_court_set_current_player (BASKSTAT_COURT (window->basket_court),
+                                       BASKSTAT_PLAYER (window->local->players->data));
 }
 
 BaskstatPlayer *
