@@ -5,6 +5,7 @@
        <menuitem name="Open" action="OpenFile" />
        <menuitem name="Save" action="SaveFile" />
        <separator/>
+       <menuitem name="Report" action="Report" />
        <menuitem name="Quit" action="Quit" />
      </menu>
      <menu name="EditMenu" action="Edit">

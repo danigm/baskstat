@@ -133,6 +133,12 @@ save_dialog (GtkWidget *widget, BaskstatWindow *window)
 }
 
 static gboolean
+make_report (GtkWidget *widget, BaskstatWindow *window)
+{
+    printf ("REPORT\n");
+}
+
+static gboolean
 close_cb (GtkWidget *widget, BaskstatWindow *window)
 {
     gtk_main_quit ();
@@ -184,6 +190,10 @@ static const GtkActionEntry baskstat_menu_entries [] = {
     { "SaveFile", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
       N_("Save current match"),
       G_CALLBACK (save_dialog) },
+
+    { "Report", GTK_STOCK_SAVE, N_("_Report"), "<control>R",
+      N_("Make a current match report"),
+      G_CALLBACK (make_report) },
 
     { "Quit", GTK_STOCK_QUIT, N_("_Quit"), "<control>Q",
       N_("Quit"),
